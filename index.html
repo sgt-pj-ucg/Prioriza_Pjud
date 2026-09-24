@@ -277,6 +277,23 @@ tr.fila-seleccionada td{background:#fff3f7!important;}
 /* MATERIA: texto largo truncado con "…" — el texto completo aparece al pasar el mouse (title nativo) */
 .celda-materia{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help;}
 
+/* -------- mini panel: cantidad de causas visibles según filtro activo -------- */
+.fila-contador-stock{margin:2px 0 10px;}
+.contador-stock{display:inline-flex;align-items:baseline;gap:5px;background:var(--azul-claro);
+  color:var(--azul-profundo);font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px;}
+
+/* -------- Stock de Causas: columnas fijas para que todo se vea al 100% de zoom,
+   sin tener que reducir el zoom del navegador ni desplazar horizontalmente -------- */
+.tabla-stock-ajustada{table-layout:fixed;font-size:12.5px;}
+.tabla-stock-ajustada th, .tabla-stock-ajustada td{padding:7px 5px;}
+.tabla-stock-ajustada th{overflow:hidden;text-overflow:ellipsis;}
+.tabla-stock-ajustada .celda-materia{max-width:none;}
+.tabla-stock-ajustada .celda-libro{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help;}
+.tabla-stock-ajustada .celda-suspension, .tabla-stock-ajustada .celda-reanudar{white-space:normal;line-height:1.25;}
+.tabla-stock-ajustada .sel-complejidad{max-width:110px;width:100%;padding:4px 4px;font-size:11.5px;}
+.tabla-stock-ajustada .sel-estado{max-width:100%;padding:4px 6px;font-size:10.5px;}
+.tabla-stock-ajustada td.celda-acciones .btn{padding:4px 7px;font-size:10.5px;border-radius:6px;white-space:nowrap;}
+
 /* columna de acciones (Eliminar) fija a la derecha: siempre visible aunque haya scroll horizontal */
 th.col-acciones{right:0;z-index:3;}
 td.celda-acciones{position:sticky;right:0;background:var(--superficie);
@@ -612,11 +629,20 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
           <button class="btn btn-secundario" id="btnActualizarMaterias"><svg class="icono-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l1.93-1.93a5 5 0 0 0-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 0 0-7.07 0L5 12.93a5 5 0 0 0 7.07 7.07l1.43-1.43"/></svg> Actualizar materias desde Stock</button>
           <button class="btn btn-secundario" id="btnLimpiarFiltrosStock">Limpiar</button>
         </div>
+        <div class="fila-contador-stock">
+          <span class="contador-stock" id="contadorStock">0 causa(s)</span>
+        </div>
         <div class="contenedor-tabla">
-          <table class="datos" id="tablaStock">
+          <table class="datos tabla-stock-ajustada" id="tablaStock">
+            <colgroup>
+              <col style="width:30px"><col style="width:56px"><col style="width:52px"><col style="width:135px">
+              <col style="width:auto"><col style="width:40px"><col style="width:132px">
+              <col style="width:118px"><col style="width:40px"><col style="width:90px"><col style="width:80px">
+              <col style="width:90px"><col style="width:90px"><col style="width:76px">
+            </colgroup>
             <thead><tr><th></th><th>ROL</th><th>AÑO</th><th>LIBRO</th><th>MATERIA</th><th>TIPO</th><th>COMPLEJIDAD</th>
-              <th>ESTADO</th><th>RIJA</th><th>SUSPENSIÓN</th><th>DÍAS PARA REANUDAR</th>
-              <th>FECHA INGRESO</th><th>FECHA RELACIÓN</th><th class="col-acciones"></th></tr></thead>
+              <th>ESTADO</th><th>RIJA</th><th>SUSPENSIÓN</th><th title="Días para reanudar">DÍAS PARA</th>
+              <th title="Fecha ingreso">INGRESO</th><th title="Fecha relación">RELACIÓN</th><th class="col-acciones"></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -2380,6 +2406,13 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var duplicados = calcularDuplicados(estado.causas);
     if(soloDuplicados) lista = lista.filter(function(c){return duplicados[c.idFila];});
 
+    var contador = document.getElementById('contadorStock');
+    if(contador){
+      contador.textContent = lista.length===estado.causas.length
+        ? lista.length+' causa(s) en total'
+        : lista.length+' de '+estado.causas.length+' causa(s) con este filtro';
+    }
+
     var tbody = document.querySelector('#tablaStock tbody');
     tbody.innerHTML = lista.map(function(c){
       var esDup = !!duplicados[c.idFila];
@@ -2388,7 +2421,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       var pesca = esPesca(c);
       return '<tr class="fila-clicable '+(esDup?'fila-duplicada ':(pesca?'fila-pesca ':''))+(marcada?'fila-seleccionada':'')+'" data-id="'+c.idFila+'">'+
         '<td><input type="checkbox" data-id="'+c.idFila+'" class="chkStock" '+(marcada?'checked':'')+'></td>'+
-        '<td>'+(c.rol||'')+'</td><td>'+(c.anio||'')+'</td><td>'+(c.libro||'')+'</td>'+celdaMateria(c)+
+        '<td>'+(c.rol||'')+'</td><td>'+(c.anio||'')+'</td><td class="celda-libro" title="'+escaparAtributo(c.libro||'')+'">'+(c.libro||'')+'</td>'+celdaMateria(c)+
         '<td>'+(c.tipo||'')+'</td><td>'+construirSelectComplejidad(c)+'</td><td>'+construirSelectEstado(c)+'</td>'+
         '<td><input type="checkbox" class="chk-rija chkRija" data-id="'+c.idFila+'" '+(tieneRija?'checked':'')+'></td>'+
         '<td class="celda-suspension" data-id="'+c.idFila+'">'+textoSuspension(c)+'</td>'+
