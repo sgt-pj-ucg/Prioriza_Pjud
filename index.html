@@ -1461,6 +1461,21 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     cargarTodo();
   }
 
+  /** Refresca TODAS las vistas que dependen de estado.causas después de
+   *  cualquier acción que haya cambiado datos (editar, ingresar, eliminar,
+   *  reemplazar, etc.) — así el Dashboard, Ranking, Traspaso, Reportes e
+   *  Informe Mensual quedan al día sin que la persona tenga que apretar
+   *  "Actualizar" a mano cada vez. */
+  function refrescarVistasDerivadas(){
+    actualizarResumenHeader();
+    renderStock();
+    renderReportesLocal();
+    renderDashboard();
+    renderRanking();
+    renderTraspaso();
+    renderInformeMensual();
+  }
+
   // configuración vía hash: #k=CLAVE
   (function leerHash(){
     if(location.hash.length < 2) return;
@@ -2443,7 +2458,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
             return llamarServicio({accion:'listar'});
           }).then(function(datos){
             estado.causas = datos.causas;
-            actualizarResumenHeader(); renderStock(); renderReportesLocal();
+            refrescarVistasDerivadas();
             mostrarToast('Causa duplicada eliminada.', 'exito');
           }).catch(mostrarErrorGlobal);
         });
@@ -2494,7 +2509,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     llamarServicio({accion:'actualizarMaterias'}).then(function(datos){
       mostrarToast('Materias actualizadas: '+datos.actualizadas, 'exito');
       return llamarServicio({accion:'listar'});
-    }).then(function(datos){ estado.causas=datos.causas; renderStock(); renderReportesLocal(); })
+    }).then(function(datos){ estado.causas=datos.causas; refrescarVistasDerivadas(); })
     .catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; });
   });
 
@@ -2648,7 +2663,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       return llamarServicio({accion:'listar'});
     }).then(function(datos){
       estado.causas = datos.causas;
-      actualizarResumenHeader(); renderStock(); renderReportesLocal();
+      refrescarVistasDerivadas();
       cerrarModalEditar();
     }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Guardar cambios'; });
   });
@@ -2735,7 +2750,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         return llamarServicio({accion:'listar'});
       }).then(function(datos){
         estado.causas = datos.causas;
-        actualizarResumenHeader(); renderReportesLocal(); renderStock(); renderRanking(); renderTraspaso();
+        refrescarVistasDerivadas();
       }).catch(mostrarErrorGlobal).finally(function(){ btnOrigen.disabled=false; btnOrigen.textContent='Confirmar y marcar "En Tabla"'; });
     });
   });
@@ -3096,7 +3111,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       cerrarModalExcel();
       return llamarServicio({accion:'listar'});
     }).then(function(datos){
-      estado.causas=datos.causas; actualizarResumenHeader(); renderStock(); renderReportesLocal();
+      estado.causas=datos.causas; refrescarVistasDerivadas();
     }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Confirmar importación'; });
   });
 
@@ -3241,7 +3256,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       cerrarModalReemplazoTotal();
       return llamarServicio({accion:'listar'});
     }).then(function(datos){
-      estado.causas=datos.causas; actualizarResumenHeader(); renderStock(); renderReportesLocal();
+      estado.causas=datos.causas; refrescarVistasDerivadas();
     }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Borrar todo y cargar'; });
   });
 
