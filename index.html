@@ -2372,12 +2372,14 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   /** <select> de edición rápida para COMPLEJIDAD; si el valor actual no está en el
    *  catálogo (mucha data histórica es texto libre), lo agrega como opción extra
    *  para no perderlo ni mostrar el select vacío. */
+  var ETIQUETA_COMPLEJIDAD_CORTA = { 'Mediana complejidad (B)': 'Mediana (B)' };
+
   function construirSelectComplejidad(c){
     var valor = c.complejidad || '';
     var conocida = OPCIONES_COMPLEJIDAD.indexOf(valor) > -1;
     var html = '<select class="sel-inline sel-complejidad" data-id="'+c.idFila+'">';
     OPCIONES_COMPLEJIDAD.forEach(function(o){
-      html += '<option value="'+escaparAtributo(o)+'" '+(o===valor?'selected':'')+'>'+(o||'(Sin definir)')+'</option>';
+      html += '<option value="'+escaparAtributo(o)+'" '+(o===valor?'selected':'')+'>'+(o?(ETIQUETA_COMPLEJIDAD_CORTA[o]||o):'(Sin definir)')+'</option>';
     });
     if(!conocida && valor){
       html += '<option value="'+escaparAtributo(valor)+'" selected>'+escaparAtributo(valor)+' (actual)</option>';
