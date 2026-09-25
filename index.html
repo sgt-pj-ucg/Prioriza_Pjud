@@ -2450,7 +2450,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         llamarServicio({accion:'actualizarCausa', idFila: idFila, cambios:{rija: nuevoValor}}).then(function(){
           var causa = estado.causas.find(function(c){return String(c.idFila)===String(idFila);});
           if(causa) causa.rija = nuevoValor;
-          renderReportesLocal();
+          refrescarVistasDerivadas();
         }).catch(function(err){ chk.checked=!chk.checked; mostrarErrorGlobal(err); })
         .finally(function(){ chk.disabled=false; });
       });
@@ -2464,6 +2464,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         llamarServicio({accion:'actualizarCausa', idFila: idFila, cambios:{complejidad: nuevoValor}}).then(function(){
           var causa = estado.causas.find(function(c){return String(c.idFila)===String(idFila);});
           if(causa) causa.complejidad = nuevoValor;
+          refrescarVistasDerivadas();
         }).catch(function(err){ mostrarErrorGlobal(err); renderStock(); })
         .finally(function(){ sel.disabled=false; });
       });
@@ -2557,7 +2558,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(causa) causa.estado = nuevoValor;
       sel.dataset.valorAnterior = nuevoValor;
       sel.className = 'sel-inline sel-estado ' + (CLASE_CHIP_ESTADO[nuevoValor] || 'chip-tramite');
-      renderReportesLocal();
+      refrescarVistasDerivadas();
     }).catch(function(err){ sel.value = valorAnterior; mostrarErrorGlobal(err); })
     .finally(function(){ sel.disabled=false; });
   }
@@ -2613,7 +2614,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         var cs = fila.querySelector('.celda-suspension'); if(cs) cs.innerHTML = textoSuspension(causa);
         var cr = fila.querySelector('.celda-reanudar'); if(cr) cr.innerHTML = textoDiasReanudar(causa);
       }
-      renderReportesLocal();
+      refrescarVistasDerivadas();
       popupSuspension.classList.add('oculto');
       popupContexto = null;
     }).catch(function(err){ mostrarErrorGlobal(err); cerrarPopupSuspension(true); })
