@@ -277,6 +277,15 @@ tr.fila-seleccionada td{background:#fff3f7!important;}
 /* MATERIA: texto largo truncado con "…" — el texto completo aparece al pasar el mouse (title nativo) */
 .celda-materia{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help;}
 
+/* -------- chips de acceso rápido por año de FECHA RELACIÓN -------- */
+.fila-anios-stock{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 2px;}
+.fila-anios-stock-lbl{font-size:12.5px;color:var(--texto-suave);font-weight:600;}
+.chips-anios{display:flex;gap:6px;flex-wrap:wrap;}
+.chip-anio{border:1px solid var(--borde);background:var(--superficie);color:var(--texto);
+  border-radius:999px;padding:4px 13px;font-size:12.5px;font-weight:600;cursor:pointer;}
+.chip-anio:hover{background:var(--azul-claro);}
+.chip-anio.activo{background:var(--azul-profundo);border-color:var(--azul-profundo);color:#fff;}
+
 /* -------- mini panel: cantidad de causas visibles según filtro activo -------- */
 .fila-contador-stock{margin:2px 0 10px;}
 .contador-stock{display:inline-flex;align-items:baseline;gap:5px;background:var(--azul-claro);
@@ -629,6 +638,10 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
           <button class="btn btn-secundario" id="btnDuplicados"></button>
           <button class="btn btn-secundario" id="btnActualizarMaterias"><svg class="icono-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l1.93-1.93a5 5 0 0 0-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 0 0-7.07 0L5 12.93a5 5 0 0 0 7.07 7.07l1.43-1.43"/></svg> Actualizar materias desde Stock</button>
           <button class="btn btn-secundario" id="btnLimpiarFiltrosStock">Limpiar</button>
+        </div>
+        <div class="fila-anios-stock" id="filaAniosStock">
+          <span class="fila-anios-stock-lbl">Año relación:</span>
+          <div class="chips-anios" id="chipsAniosStock"></div>
         </div>
         <div class="fila-contador-stock">
           <span class="contador-stock" id="contadorStock">0 causa(s)</span>
@@ -2357,6 +2370,44 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(!texto) return true;
       var pack = [c.rol,c.anio,c.libro,c.materia,c.tipo].join(' ').toLowerCase();
       return pack.indexOf(texto) > -1;
+    }).sort(function(a,b){
+      // más antigua primero por FECHA RELACIÓN; las causas sin fecha válida quedan al final
+      var fa = parsearFechaLocal(a.fechaRelacion), fb = parsearFechaLocal(b.fechaRelacion);
+      if(!fa && !fb) return 0;
+      if(!fa) return 1;
+      if(!fb) return -1;
+      return fa.getTime() - fb.getTime();
+    });
+  }
+
+  /** Años detectados en FECHA RELACIÓN de todo el stock, para los chips de acceso rápido. */
+  function aniosRelacionDisponibles(){
+    var set = {};
+    estado.causas.forEach(function(c){
+      var f = parsearFechaLocal(c.fechaRelacion);
+      if(f) set[f.getFullYear()] = true;
+    });
+    return Object.keys(set).map(Number).sort(function(a,b){ return a-b; });
+  }
+
+  function renderChipsAniosStock(){
+    var cont = document.getElementById('chipsAniosStock');
+    if(!cont) return;
+    var anios = aniosRelacionDisponibles();
+    var desde = document.getElementById('filtroRelacionDesde').value;
+    var hasta = document.getElementById('filtroRelacionHasta').value;
+    cont.innerHTML = anios.map(function(a){
+      var activo = desde===(a+'-01') && hasta===(a+'-12');
+      return '<button type="button" class="chip-anio'+(activo?' activo':'')+'" data-anio="'+a+'">'+a+'</button>';
+    }).join('');
+    cont.querySelectorAll('.chip-anio').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var a = btn.dataset.anio;
+        var yaActivo = btn.classList.contains('activo');
+        document.getElementById('filtroRelacionDesde').value = yaActivo ? '' : (a+'-01');
+        document.getElementById('filtroRelacionHasta').value = yaActivo ? '' : (a+'-12');
+        renderStock();
+      });
     });
   }
 
@@ -2408,6 +2459,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var lista = causasFiltradas();
     var duplicados = calcularDuplicados(estado.causas);
     if(soloDuplicados) lista = lista.filter(function(c){return duplicados[c.idFila];});
+
+    renderChipsAniosStock();
 
     var contador = document.getElementById('contadorStock');
     if(contador){
