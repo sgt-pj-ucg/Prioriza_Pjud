@@ -315,7 +315,8 @@ table.datos#tablaStock th{white-space:normal;line-height:1.2;vertical-align:bott
 .badge-es-acumulada{display:inline-block;background:#fdf3e3;color:var(--ambar);font-size:10px;font-weight:700;
   padding:2px 7px;border-radius:999px;white-space:nowrap;margin-left:6px;}
 
-/* -------- modal de causas acumuladas -------- */
+/* -------- modal de causas acumuladas: popup centrado, no drawer lateral -------- */
+.popup-caja-acumulada{width:min(480px,94vw);max-height:88vh;overflow-y:auto;}
 .campo-label{display:block;font-size:12px;font-weight:600;color:var(--texto-suave);margin:12px 0 4px;}
 .campo-label-destacado{color:var(--azul-profundo);font-size:13px;border-top:1px solid var(--borde);padding-top:14px;}
 .fila-campos-acumulada{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -697,8 +698,8 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
     </section>
 
     <!-- ===== MODAL: causas acumuladas de una causa base ===== -->
-    <div id="modalAcumulada" class="drawer-fondo oculto">
-      <div class="drawer-panel">
+    <div id="modalAcumulada" class="popup-fondo oculto">
+      <div class="popup-caja popup-caja-acumulada">
         <h3>Causas acumuladas</h3>
         <p class="subt" id="acumuladaBaseInfo">Causa base</p>
         <p class="subt">Se tramitan junto a la causa base — no compiten por sí solas en el Índice de Prioridad ni suman a "Disponibles".</p>
@@ -2906,12 +2907,10 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     document.getElementById('acumMateria').value = '';
     renderListaAcumuladaModal();
     modalAcumulada.classList.remove('oculto');
-    requestAnimationFrame(function(){ modalAcumulada.classList.add('abierto'); });
   }
 
   function cerrarModalAcumulada(){
-    modalAcumulada.classList.remove('abierto');
-    setTimeout(function(){ modalAcumulada.classList.add('oculto'); }, 220);
+    modalAcumulada.classList.add('oculto');
     baseAcumulada = null;
   }
 
