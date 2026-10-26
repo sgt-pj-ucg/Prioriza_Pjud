@@ -320,7 +320,15 @@ table.datos#tablaStock th{white-space:normal;line-height:1.2;vertical-align:bott
 .campo-label{display:block;font-size:12px;font-weight:600;color:var(--texto-suave);margin:12px 0 4px;}
 .campo-label-destacado{color:var(--azul-profundo);font-size:13px;border-top:1px solid var(--borde);padding-top:14px;}
 .fila-campos-acumulada{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fila-campos-acumulada input.buscador{min-width:0;}
 .acumuladas-lista-modal{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;margin-top:8px;}
+.acum-libro-resuelto{min-height:18px;margin-top:6px;font-size:12px;}
+.acum-libro-resuelto .ok{color:var(--verde);font-weight:600;}
+.acum-libro-resuelto .duda{color:var(--texto-suave);}
+.acum-libro-resuelto .elegir-libro{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px;}
+.acum-libro-resuelto .chip-libro-opcion{border:1px solid var(--borde);background:var(--superficie);
+  border-radius:999px;padding:3px 11px;font-size:11.5px;font-weight:600;cursor:pointer;}
+.acum-libro-resuelto .chip-libro-opcion.elegido{background:var(--azul-profundo);border-color:var(--azul-profundo);color:#fff;}
 .acumuladas-lista-modal .vacio{color:var(--texto-suave);font-size:12.5px;padding:10px 2px;}
 .acumulada-item{border:1px solid var(--borde);border-radius:8px;padding:8px 10px;font-size:12.5px;
   display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
@@ -717,8 +725,10 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
             <input type="text" id="acumAnio" class="buscador">
           </div>
         </div>
+        <div id="acumLibroResuelto" class="acum-libro-resuelto"></div>
         <label class="campo-label">Materia *</label>
-        <input type="text" id="acumMateria" class="buscador" placeholder="Ej: Obligación de dar, cumplimiento">
+        <input type="text" id="acumMateria" class="buscador" placeholder="Ej: Obligación de dar, cumplimiento" list="listaMateriasExistentes" autocomplete="off">
+        <datalist id="listaMateriasExistentes"></datalist>
 
         <div class="popup-acciones">
           <button class="btn btn-secundario" id="btnCancelarAcumulada">Cerrar</button>
@@ -1516,6 +1526,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     if(!datos.causaBaseId) return Promise.reject(new Error('Debes elegir la causa base.'));
     var obj = {
       rol: String(datos.rol).trim(), anio: String(datos.anio).trim(), materia: String(datos.materia).trim(),
+      libro: String(datos.libro||'').trim(), // siempre el mismo libro de la causa base
       estado: 'Disponible', acumulada: true,
       causaBaseId: datos.causaBaseId, causaBaseRol: datos.causaBaseRol||'', causaBaseAnio: datos.causaBaseAnio||''
     };
@@ -2893,6 +2904,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
   var modalAcumulada = document.getElementById('modalAcumulada');
   var baseAcumulada = null; // {idFila, rol, anio, libro} — causa base del modal abierto
+  var libroResueltoAcumulada = null; // libro identificado automáticamente para la causa que se está agregando
 
   /** Clic en el checkbox "ACUM." de una fila: abre el modal con esa causa como base,
    *  igual de rápido e identificable que marcar RIJA, pero dispara una ventana en vez
@@ -2905,8 +2917,62 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     document.getElementById('acumRol').value = '';
     document.getElementById('acumAnio').value = '';
     document.getElementById('acumMateria').value = '';
+    document.getElementById('acumLibroResuelto').innerHTML = '';
+    libroResueltoAcumulada = null;
+    poblarListaMateriasExistentes(causaBase.libro);
     renderListaAcumuladaModal();
     modalAcumulada.classList.remove('oculto');
+  }
+
+  /** Al escribir ROL/AÑO de la causa que se agrega, busca si ya existe en el stock
+   *  (en cualquier libro) y resuelve el LIBRO automáticamente — si coincide con más
+   *  de un libro, deja elegir con un clic en vez de tener que saberlo de memoria. */
+  function actualizarLibroResuelto(){
+    var rol = document.getElementById('acumRol').value.trim();
+    var anio = document.getElementById('acumAnio').value.trim();
+    var cont = document.getElementById('acumLibroResuelto');
+    libroResueltoAcumulada = null;
+    if(!rol || !anio){ cont.innerHTML = ''; return; }
+    var libros = {};
+    estado.causas.forEach(function(c){
+      if(c.acumulada || !c.libro) return;
+      if(String(c.rol||'').trim()===rol && String(c.anio||'').trim()===anio) libros[c.libro] = true;
+    });
+    var opciones = Object.keys(libros);
+    if(opciones.length === 0){
+      cont.innerHTML = '<span class="duda">No se encontró ese ROL/AÑO — se usará el libro de la causa base ('+(baseAcumulada?baseAcumulada.libro:'')+').</span>';
+    } else if(opciones.length === 1){
+      libroResueltoAcumulada = opciones[0];
+      cont.innerHTML = '<span class="ok">✓ Libro identificado: '+opciones[0]+'</span>';
+    } else {
+      cont.innerHTML = '<div class="duda">Ese ROL/AÑO existe en '+opciones.length+' libros — elige cuál es:</div>'+
+        '<div class="elegir-libro">'+opciones.map(function(l){
+          return '<button type="button" class="chip-libro-opcion" data-libro="'+escaparAtributo(l)+'">'+l+'</button>';
+        }).join('')+'</div>';
+      cont.querySelectorAll('.chip-libro-opcion').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          libroResueltoAcumulada = btn.dataset.libro;
+          cont.querySelectorAll('.chip-libro-opcion').forEach(function(b){ b.classList.toggle('elegido', b===btn); });
+        });
+      });
+    }
+  }
+  document.getElementById('acumRol').addEventListener('input', actualizarLibroResuelto);
+  document.getElementById('acumAnio').addEventListener('input', actualizarLibroResuelto);
+
+  /** Lista (datalist) de materias ya usadas en el mismo libro, para que el
+   *  funcionario elija de lo existente en vez de escribir texto libre cada vez. */
+  function poblarListaMateriasExistentes(libro){
+    var vistas = {};
+    var materias = [];
+    estado.causas.forEach(function(c){
+      if(libro && String(c.libro||'').trim()!==String(libro).trim()) return;
+      var m = materiaLimpia(c.materia);
+      if(m && !vistas[m]){ vistas[m]=true; materias.push(m); }
+    });
+    materias.sort(function(a,b){ return a.localeCompare(b,'es'); });
+    document.getElementById('listaMateriasExistentes').innerHTML =
+      materias.map(function(m){ return '<option value="'+escaparAtributo(m)+'">'; }).join('');
   }
 
   function cerrarModalAcumulada(){
@@ -2950,22 +3016,32 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var anio = document.getElementById('acumAnio').value.trim();
     var materia = document.getElementById('acumMateria').value.trim();
     if(!rol || !anio || !materia){ mostrarToast('ROL, AÑO y MATERIA son obligatorios.', 'error'); return; }
-    var btn = this; btn.disabled = true; btn.textContent = 'Guardando...';
-    llamarServicio({accion:'agregarAcumulada', datos:{
-      rol:rol, anio:anio, materia:materia,
-      causaBaseId: baseAcumulada.idFila, causaBaseRol: baseAcumulada.rol, causaBaseAnio: baseAcumulada.anio
-    }}).then(function(){
-      return llamarServicio({accion:'listar'});
-    }).then(function(datos){
-      estado.causas = datos.causas;
-      refrescarVistasDerivadas();
-      renderListaAcumuladaModal();
-      document.getElementById('acumRol').value = '';
-      document.getElementById('acumAnio').value = '';
-      document.getElementById('acumMateria').value = '';
-      document.getElementById('acumRol').focus();
-      mostrarToast('Causa acumulada agregada.', 'exito');
-    }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Agregar'; });
+    var btn = this;
+    var libroFinal = libroResueltoAcumulada || baseAcumulada.libro;
+    confirmarAccion(
+      '¿Agregar la causa ROL '+rol+'/'+anio+' · '+libroFinal+' ("'+materia+'") como acumulada de la causa base ROL '+baseAcumulada.rol+'/'+baseAcumulada.anio+'?',
+      {textoOk:'Sí, agregar'}
+    ).then(function(ok){
+      if(!ok) return;
+      btn.disabled = true; btn.textContent = 'Guardando...';
+      llamarServicio({accion:'agregarAcumulada', datos:{
+        rol:rol, anio:anio, materia:materia, libro: libroFinal,
+        causaBaseId: baseAcumulada.idFila, causaBaseRol: baseAcumulada.rol, causaBaseAnio: baseAcumulada.anio
+      }}).then(function(){
+        return llamarServicio({accion:'listar'});
+      }).then(function(datos){
+        estado.causas = datos.causas;
+        refrescarVistasDerivadas();
+        renderListaAcumuladaModal();
+        document.getElementById('acumRol').value = '';
+        document.getElementById('acumAnio').value = '';
+        document.getElementById('acumMateria').value = '';
+        document.getElementById('acumLibroResuelto').innerHTML = '';
+        libroResueltoAcumulada = null;
+        document.getElementById('acumRol').focus();
+        mostrarToast('Causa acumulada agregada.', 'exito');
+      }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Agregar'; });
+    });
   });
 
   /* ================= STAGING (selección compartida Ranking + Stock) ================= */
