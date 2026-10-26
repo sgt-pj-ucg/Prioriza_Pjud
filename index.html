@@ -310,10 +310,17 @@ table.datos#tablaStock th{white-space:normal;line-height:1.2;vertical-align:bott
 .separador-filtros-rapidos{width:1px;align-self:stretch;min-height:22px;background:var(--borde);}
 
 /* -------- checkbox "ACUM." (como RIJA): clic abre el modal de causas acumuladas de esa fila -------- */
-.chk-acum{cursor:pointer;accent-color:var(--ambar);}
-.chk-acum:checked{accent-color:var(--ambar);}
-.badge-es-acumulada{display:inline-block;background:#fdf3e3;color:var(--ambar);font-size:10px;font-weight:700;
-  padding:2px 7px;border-radius:999px;white-space:nowrap;margin-left:6px;}
+.chk-acum{cursor:pointer;accent-color:var(--cian);}
+.chk-acum:checked{accent-color:var(--cian);}
+.badge-es-acumulada{display:inline-block;background:#E3F7FA;color:#0E7C90;font-size:10px;font-weight:700;
+  padding:3px 8px;border-radius:999px;white-space:nowrap;margin-left:6px;border:none;cursor:pointer;}
+.badge-es-acumulada:hover{background:#CDEFF5;}
+/* fila con la causa base destacada: tinte celeste suave para que resalte en la lista */
+tr.fila-tiene-acumuladas td{background:#F2FBFD!important;}
+tr.fila-tiene-acumuladas:hover td{background:#E6F7FA!important;}
+/* fila que ES una causa acumulada: mismo tinte, un poco más marcado */
+tr.fila-es-acumulada td{background:#E9F8FA!important;}
+tr.fila-es-acumulada:hover td{background:#DCF3F6!important;}
 
 /* -------- modal de causas acumuladas: popup centrado, no drawer lateral -------- */
 .popup-caja-acumulada{width:min(480px,94vw);max-height:88vh;overflow-y:auto;}
@@ -344,6 +351,8 @@ tr:hover td.celda-acciones{background:#fafbfc;}
 tr.fila-pesca td.celda-acciones{background:#e6f4ec!important;}
 tr.fila-duplicada td.celda-acciones{background:#fdecea!important;}
 tr.fila-seleccionada td.celda-acciones{background:#fff3f7!important;}
+tr.fila-tiene-acumuladas td.celda-acciones{background:#F2FBFD!important;}
+tr.fila-es-acumulada td.celda-acciones{background:#E9F8FA!important;}
 .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
 .chip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;}
 .chip-disponible{background:#e6f4ec;color:var(--verde);}
@@ -1298,7 +1307,6 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         case 'confirmarTabla': return accionConfirmarTabla(cuerpo.idsFila||[]);
         case 'actualizarCausa': return accionActualizarCausa(cuerpo.idFila, cuerpo.cambios||{});
         case 'eliminarFila': return accionEliminarFila(cuerpo.idFila);
-        case 'agregarAcumulada': return accionAgregarAcumulada(cuerpo.datos);
         default: return Promise.reject(new Error('Acción no reconocida: '+cuerpo.accion));
       }
     }, function(){
@@ -1512,21 +1520,6 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   function accionEliminarFila(idFila){
     if(!idFila) return Promise.reject(new Error('idFila inválido.'));
     return db.collection('causas').doc(String(idFila)).delete().then(function(){ return { ok:true }; });
-  }
-
-  /** Crea una causa "acumulada": registro liviano vinculado a una causa base,
-   *  que no compite en el Índice de Prioridad ni suma a los "Disponibles". */
-  function accionAgregarAcumulada(datos){
-    if(!datos || !datos.rol || !datos.anio || !datos.libro){
-      return Promise.reject(new Error('ROL, AÑO y LIBRO son obligatorios.'));
-    }
-    if(!datos.causaBaseId) return Promise.reject(new Error('Debes elegir la causa base.'));
-    var obj = {
-      rol: String(datos.rol).trim(), anio: String(datos.anio).trim(), libro: String(datos.libro).trim(),
-      estado: 'Disponible', acumulada: true,
-      causaBaseId: datos.causaBaseId, causaBaseRol: datos.causaBaseRol||'', causaBaseAnio: datos.causaBaseAnio||''
-    };
-    return db.collection('causas').add(obj).then(function(ref){ return { ok:true, idFila: ref.id }; });
   }
 
   /* ---------------- login ---------------- */
@@ -1762,7 +1755,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
   function calcularDuplicados(causas){
     var grupos = {};
-    causas.forEach(function(c){ var k=claveDup(c); (grupos[k]=grupos[k]||[]).push(c); });
+    causas.forEach(function(c){ if(c.acumulada) return; var k=claveDup(c); (grupos[k]=grupos[k]||[]).push(c); });
     var setDup = {};
     Object.keys(grupos).forEach(function(k){ if(grupos[k].length>1) grupos[k].forEach(function(c){ setDup[c.idFila]=true; }); });
     return setDup;
@@ -2594,12 +2587,13 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       var pesca = esPesca(c);
       var nAcum = contarAcumuladasDe(c.idFila);
       var badgeEstado = c.acumulada
-        ? ' <span class="badge-es-acumulada" title="Acumulada a ROL '+escaparAtributo(c.causaBaseRol||'')+'/'+escaparAtributo(c.causaBaseAnio||'')+'">Acumulada</span>'
+        ? ' <button type="button" class="badge-es-acumulada btnVerBaseAcumulada" data-id="'+c.idFila+'" title="Acumulada a ROL '+escaparAtributo(c.causaBaseRol||'')+'/'+escaparAtributo(c.causaBaseAnio||'') + ' — clic para ver el detalle">Acumulada</button>'
         : '';
       var celdaAcum = c.acumulada
         ? '<span title="Es una causa acumulada">—</span>'
         : '<input type="checkbox" class="chk-acum" data-id="'+c.idFila+'" '+(nAcum?'checked':'')+' title="'+(nAcum?nAcum+' causa(s) acumulada(s) — clic para ver/agregar':'Marcar para agregar una causa acumulada a esta')+'">';
-      return '<tr class="fila-clicable '+(esDup?'fila-duplicada ':(pesca?'fila-pesca ':''))+(marcada?'fila-seleccionada':'')+'" data-id="'+c.idFila+'">'+
+      var claseFilaAcum = c.acumulada ? 'fila-es-acumulada ' : (nAcum ? 'fila-tiene-acumuladas ' : '');
+      return '<tr class="fila-clicable '+claseFilaAcum+(esDup?'fila-duplicada ':(pesca?'fila-pesca ':''))+(marcada?'fila-seleccionada':'')+'" data-id="'+c.idFila+'">'+
         '<td><input type="checkbox" data-id="'+c.idFila+'" class="chkStock" '+(marcada?'checked':'')+(c.acumulada?' disabled title="Las causas acumuladas no se traspasan por sí solas"':'')+'></td>'+
         '<td>'+(c.rol||'')+'</td><td>'+(c.anio||'')+'</td><td class="celda-libro" title="'+escaparAtributo(c.libro||'')+'">'+(c.libro||'')+'</td>'+celdaMateria(c)+
         '<td>'+(c.tipo||'')+'</td><td>'+construirSelectComplejidad(c)+'</td><td>'+construirSelectEstado(c)+badgeEstado+'</td>'+
@@ -2685,6 +2679,15 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         e.preventDefault(); // no es un valor que se guarde directo: el clic siempre abre el modal
         var causa = estado.causas.find(function(c){return String(c.idFila)===String(chk.dataset.id);});
         abrirModalAcumulada(causa);
+      });
+    });
+    tbody.querySelectorAll('.btnVerBaseAcumulada').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var causa = estado.causas.find(function(c){return String(c.idFila)===String(btn.dataset.id);});
+        var base = causa && estado.causas.find(function(c){return String(c.idFila)===String(causa.causaBaseId);});
+        if(base) abrirModalAcumulada(base);
+        else mostrarToast('No se encontró la causa base (puede haber sido eliminada).', 'error');
       });
     });
   }
@@ -2892,7 +2895,13 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Guardar cambios'; });
   });
 
-  /* ================= CAUSAS ACUMULADAS ================= */
+  /* ================= CAUSAS ACUMULADAS =================
+     Modelo: "acumular" vincula una causa YA EXISTENTE en el stock a otra (la base),
+     marcándola con acumulada:true + causaBaseId. No se crean registros nuevos —
+     así la causa conserva toda su información real (materia, estado, fechas) y
+     nunca choca con el detector de duplicados. "Desacumular" solo limpia esos
+     campos: la causa real nunca se borra. */
+
   /** Cuenta cuántas causas acumuladas apuntan a una causa base dada. */
   function contarAcumuladasDe(idFila){
     return estado.causas.filter(function(c){ return c.acumulada && String(c.causaBaseId)===String(idFila); }).length;
@@ -2900,59 +2909,78 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
   var modalAcumulada = document.getElementById('modalAcumulada');
   var baseAcumulada = null; // {idFila, rol, anio, libro} — causa base del modal abierto
-  var libroResueltoAcumulada = null; // libro identificado automáticamente para la causa que se está agregando
+  var causaEncontradaAcumular = null; // causa real que coincide con el ROL/AÑO(/libro) tipeado, lista para vincular
 
-  /** Clic en el checkbox "ACUM." de una fila: abre el modal con esa causa como base,
-   *  igual de rápido e identificable que marcar RIJA, pero dispara una ventana en vez
-   *  de guardar un valor directo. */
+  /** Clic en el checkbox/badge "ACUM." de una fila (o en el badge "Acumulada" de
+   *  una fila ya acumulada): siempre abre el modal centrado en la CAUSA BASE
+   *  correspondiente, mostrando el resumen completo y todas sus acumuladas. */
   function abrirModalAcumulada(causaBase){
     if(!causaBase) return;
     baseAcumulada = { idFila: causaBase.idFila, rol: causaBase.rol, anio: causaBase.anio, libro: causaBase.libro };
     document.getElementById('acumuladaBaseInfo').textContent =
-      'Causa base: ROL '+(causaBase.rol||'')+'/'+(causaBase.anio||'')+' · '+(causaBase.libro||'');
+      'Causa base: ROL '+(causaBase.rol||'')+'/'+(causaBase.anio||'')+' · '+(causaBase.libro||'')+' · '+(materiaLimpia(causaBase.materia)||'Sin materia');
     document.getElementById('acumRol').value = '';
     document.getElementById('acumAnio').value = '';
     document.getElementById('acumLibroResuelto').innerHTML = '';
-    libroResueltoAcumulada = null;
+    causaEncontradaAcumular = null;
     renderListaAcumuladaModal();
     modalAcumulada.classList.remove('oculto');
   }
 
-  /** Al escribir ROL/AÑO de la causa que se agrega, busca si ya existe en el stock
-   *  (en cualquier libro) y resuelve el LIBRO automáticamente — si coincide con más
-   *  de un libro, deja elegir con un clic en vez de tener que saberlo de memoria. */
+  /** Al escribir ROL/AÑO de la causa a acumular, la busca entre las causas REALES
+   *  del stock (nunca entre acumuladas) y resuelve cuál es — si el mismo ROL/AÑO
+   *  existe en más de un libro, deja elegir con un clic cuál corresponde. */
   function actualizarLibroResuelto(){
     var rol = document.getElementById('acumRol').value.trim();
     var anio = document.getElementById('acumAnio').value.trim();
     var cont = document.getElementById('acumLibroResuelto');
-    libroResueltoAcumulada = null;
+    causaEncontradaAcumular = null;
     if(!rol || !anio){ cont.innerHTML = ''; return; }
-    var libros = {};
-    estado.causas.forEach(function(c){
-      if(c.acumulada || !c.libro) return;
-      if(String(c.rol||'').trim()===rol && String(c.anio||'').trim()===anio) libros[c.libro] = true;
+    var coincidencias = estado.causas.filter(function(c){
+      return !c.acumulada && String(c.rol||'').trim()===rol && String(c.anio||'').trim()===anio;
     });
-    var opciones = Object.keys(libros);
-    if(opciones.length === 0){
-      cont.innerHTML = '<span class="duda">No se encontró ese ROL/AÑO — se usará el libro de la causa base ('+(baseAcumulada?baseAcumulada.libro:'')+').</span>';
-    } else if(opciones.length === 1){
-      libroResueltoAcumulada = opciones[0];
-      cont.innerHTML = '<span class="ok">✓ Libro identificado: '+opciones[0]+'</span>';
-    } else {
-      cont.innerHTML = '<div class="duda">Ese ROL/AÑO existe en '+opciones.length+' libros — elige cuál es:</div>'+
-        '<div class="elegir-libro">'+opciones.map(function(l){
-          return '<button type="button" class="chip-libro-opcion" data-libro="'+escaparAtributo(l)+'">'+l+'</button>';
-        }).join('')+'</div>';
-      cont.querySelectorAll('.chip-libro-opcion').forEach(function(btn){
-        btn.addEventListener('click', function(){
-          libroResueltoAcumulada = btn.dataset.libro;
-          cont.querySelectorAll('.chip-libro-opcion').forEach(function(b){ b.classList.toggle('elegido', b===btn); });
-        });
-      });
+    if(coincidencias.length === 0){
+      cont.innerHTML = '<span class="duda">No se encontró esa causa en el Stock. Verifica el ROL/AÑO — debe estar cargada previamente.</span>';
+      return;
     }
+    var libros = {};
+    coincidencias.forEach(function(c){ libros[c.libro] = libros[c.libro] || []; libros[c.libro].push(c); });
+    var opciones = Object.keys(libros);
+    if(opciones.length === 1) return resolverCausaAcumular(libros[opciones[0]][0]);
+    cont.innerHTML = '<div class="duda">Ese ROL/AÑO existe en '+opciones.length+' libros — elige cuál es:</div>'+
+      '<div class="elegir-libro">'+opciones.map(function(l){
+        return '<button type="button" class="chip-libro-opcion" data-libro="'+escaparAtributo(l)+'">'+l+'</button>';
+      }).join('')+'</div>';
+    cont.querySelectorAll('.chip-libro-opcion').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        cont.querySelectorAll('.chip-libro-opcion').forEach(function(b){ b.classList.toggle('elegido', b===btn); });
+        resolverCausaAcumular(libros[btn.dataset.libro][0], true);
+      });
+    });
   }
   document.getElementById('acumRol').addEventListener('input', actualizarLibroResuelto);
   document.getElementById('acumAnio').addEventListener('input', actualizarLibroResuelto);
+
+  /** Deja lista la causa encontrada para acumular, validando que no sea la propia
+   *  base ni una causa que ya esté acumulada a otra. Si viene de elegir libro
+   *  (mantenerChips), no vuelve a pintar los chips para no perder la selección. */
+  function resolverCausaAcumular(causa, mantenerChips){
+    var cont = document.getElementById('acumLibroResuelto');
+    if(String(causa.idFila)===String(baseAcumulada.idFila)){
+      causaEncontradaAcumular = null;
+      cont.innerHTML = '<span class="duda">Esa es la propia causa base — elige otra.</span>';
+      return;
+    }
+    if(causa.acumulada){
+      causaEncontradaAcumular = null;
+      cont.innerHTML = '<span class="duda">Esa causa ya está acumulada a otra causa base (ROL '+(causa.causaBaseRol||'')+'/'+(causa.causaBaseAnio||'')+').</span>';
+      return;
+    }
+    causaEncontradaAcumular = causa;
+    var resumen = '<span class="ok">✓ '+causa.libro+' · '+(materiaLimpia(causa.materia)||'Sin materia')+' · '+(causa.estado||'Disponible')+'</span>';
+    if(mantenerChips) cont.insertAdjacentHTML('beforeend', '<div>'+resumen+'</div>');
+    else cont.innerHTML = resumen;
+  }
 
   function cerrarModalAcumulada(){
     modalAcumulada.classList.add('oculto');
@@ -2965,21 +2993,27 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var lista = estado.causas.filter(function(c){ return c.acumulada && String(c.causaBaseId)===String(baseAcumulada.idFila); });
     cont.innerHTML = lista.map(function(c){
       return '<div class="acumulada-item">'+
-        '<div><div class="rol-anio">ROL '+(c.rol||'')+'/'+(c.anio||'')+'</div><div class="materia">'+(c.libro||'—')+'</div></div>'+
-        '<button type="button" class="btn-eliminar-acum" data-id="'+c.idFila+'">Quitar</button>'+
+        '<div><div class="rol-anio">ROL '+(c.rol||'')+'/'+(c.anio||'')+' · '+(c.libro||'')+'</div>'+
+        '<div class="materia">'+(materiaLimpia(c.materia)||'Sin materia')+'</div></div>'+
+        '<button type="button" class="btn-eliminar-acum" data-id="'+c.idFila+'">Desacumular</button>'+
         '</div>';
     }).join('') || '<div class="vacio">Esta causa aún no tiene acumuladas. Agrega la primera abajo.</div>';
     cont.querySelectorAll('.btn-eliminar-acum').forEach(function(btn){
       btn.addEventListener('click', function(){
-        confirmarAccion('¿Quitar esta causa acumulada? No se puede deshacer.', {peligro:true, textoOk:'Quitar'}).then(function(ok){
+        confirmarAccion(
+          '¿Desacumular esta causa? Volverá a competir de forma independiente en el Índice de Prioridad.',
+          {textoOk:'Sí, desacumular'}
+        ).then(function(ok){
           if(!ok) return;
-          llamarServicio({accion:'eliminarFila', idFila: btn.dataset.id}).then(function(){
+          llamarServicio({accion:'actualizarCausa', idFila: btn.dataset.id, cambios:{
+            acumulada:false, causaBaseId:'', causaBaseRol:'', causaBaseAnio:''
+          }}).then(function(){
             return llamarServicio({accion:'listar'});
           }).then(function(datos){
             estado.causas = datos.causas;
             refrescarVistasDerivadas();
             renderListaAcumuladaModal();
-            mostrarToast('Causa acumulada eliminada.', 'exito');
+            mostrarToast('Causa desacumulada.', 'exito');
           }).catch(mostrarErrorGlobal);
         });
       });
@@ -2991,21 +3025,17 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
   document.getElementById('btnGuardarAcumulada').addEventListener('click', function(){
     if(!baseAcumulada) return;
-    var rol = document.getElementById('acumRol').value.trim();
-    var anio = document.getElementById('acumAnio').value.trim();
-    if(!rol || !anio){ mostrarToast('ROL y AÑO son obligatorios.', 'error'); return; }
+    if(!causaEncontradaAcumular){ mostrarToast('Escribe el ROL y AÑO de una causa existente en el Stock.', 'error'); return; }
     var btn = this;
-    var libroFinal = libroResueltoAcumulada || baseAcumulada.libro;
-    if(!libroFinal){ mostrarToast('No se pudo determinar el libro.', 'error'); return; }
+    var causa = causaEncontradaAcumular;
     confirmarAccion(
-      '¿Agregar la causa ROL '+rol+'/'+anio+' · '+libroFinal+' como acumulada de la causa base ROL '+baseAcumulada.rol+'/'+baseAcumulada.anio+'?',
-      {textoOk:'Sí, agregar'}
+      '¿Acumular la causa ROL '+causa.rol+'/'+causa.anio+' · '+causa.libro+' ("'+(materiaLimpia(causa.materia)||'Sin materia')+'") a la causa base ROL '+baseAcumulada.rol+'/'+baseAcumulada.anio+'? Dejará de competir por sí sola en el Índice de Prioridad.',
+      {textoOk:'Sí, acumular'}
     ).then(function(ok){
       if(!ok) return;
       btn.disabled = true; btn.textContent = 'Guardando...';
-      llamarServicio({accion:'agregarAcumulada', datos:{
-        rol:rol, anio:anio, libro: libroFinal,
-        causaBaseId: baseAcumulada.idFila, causaBaseRol: baseAcumulada.rol, causaBaseAnio: baseAcumulada.anio
+      llamarServicio({accion:'actualizarCausa', idFila: causa.idFila, cambios:{
+        acumulada:true, causaBaseId: baseAcumulada.idFila, causaBaseRol: baseAcumulada.rol, causaBaseAnio: baseAcumulada.anio
       }}).then(function(){
         return llamarServicio({accion:'listar'});
       }).then(function(datos){
@@ -3015,9 +3045,9 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         document.getElementById('acumRol').value = '';
         document.getElementById('acumAnio').value = '';
         document.getElementById('acumLibroResuelto').innerHTML = '';
-        libroResueltoAcumulada = null;
+        causaEncontradaAcumular = null;
         document.getElementById('acumRol').focus();
-        mostrarToast('Causa acumulada agregada.', 'exito');
+        mostrarToast('Causa acumulada.', 'exito');
       }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Agregar'; });
     });
   });
