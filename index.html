@@ -498,6 +498,8 @@ tr.fila-clicable{cursor:pointer;}
 .sel-estado.chip-tabla{background:#e8eef8;color:var(--azul-medio);}
 .sel-estado.chip-suspendida{background:#f1e8f7;color:var(--purpura);}
 .sel-estado.chip-desistida{background:#fceceb;color:var(--rojo);}
+/* causa acumulada: el estado real se mantiene pero se apaga — el badge "Acumulada" de al lado es la señal principal */
+.sel-estado.chip-apagado{background:#F0F2F5;color:var(--texto-suave);}
 
 /* -------- popup rápido: fecha y días al marcar "Suspendida Procedimiento" -------- */
 .popup-fondo{position:fixed;inset:0;background:rgba(15,42,74,.45);z-index:250;
@@ -2574,7 +2576,9 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
   function construirSelectEstado(c){
     var valor = c.estado || 'Disponible';
-    var clase = CLASE_CHIP_ESTADO[valor] || 'chip-tramite';
+    // en una causa acumulada, el estado real se mantiene (y se puede editar) pero se
+    // muestra apagado: la señal principal de esa fila es el badge "Acumulada" de al lado.
+    var clase = c.acumulada ? 'chip-apagado' : (CLASE_CHIP_ESTADO[valor] || 'chip-tramite');
     var html = '<select class="sel-inline sel-estado '+clase+'" data-id="'+c.idFila+'">';
     OPCIONES_ESTADO.forEach(function(o){
       html += '<option value="'+o+'" '+(o===valor?'selected':'')+'>'+(ETIQUETA_ESTADO_CORTA[o]||o)+'</option>';
