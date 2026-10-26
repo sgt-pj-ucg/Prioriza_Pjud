@@ -309,12 +309,18 @@ table.datos#tablaStock th{white-space:normal;line-height:1.2;vertical-align:bott
 .grupo-filtro-rapido{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .separador-filtros-rapidos{width:1px;align-self:stretch;min-height:22px;background:var(--borde);}
 
-/* -------- checkbox "ACUM." (como RIJA): clic abre el modal de causas acumuladas de esa fila -------- */
-.chk-acum{cursor:pointer;accent-color:var(--cian);}
-.chk-acum:checked{accent-color:var(--cian);}
-.badge-es-acumulada{display:inline-block;background:#E3F7FA;color:#0E7C90;font-size:10px;font-weight:700;
-  padding:3px 8px;border-radius:999px;white-space:nowrap;margin-left:6px;border:none;cursor:pointer;}
+/* -------- columna "ACUM.": un botón por fila, clic abre el modal centrado en la causa base -------- */
+.btn-acum-celda{display:inline-block;font-size:10.5px;font-weight:700;padding:4px 8px;border-radius:999px;
+  white-space:nowrap;cursor:pointer;line-height:1.3;}
+/* esta fila ES una causa acumulada */
+.badge-es-acumulada{background:#E3F7FA;color:#0E7C90;border:1px solid #BCE8EF;}
 .badge-es-acumulada:hover{background:#CDEFF5;}
+/* esta fila es la causa BASE y tiene una o más acumuladas — más marcado, para que destaque */
+.badge-tiene-acumuladas{background:var(--cian);color:#fff;border:1px solid var(--cian);}
+.badge-tiene-acumuladas:hover{background:#2EB2C4;}
+/* sin acumular todavía — discreto, invita a usarlo sin llamar demasiado la atención */
+.btn-acum-vacio{background:transparent;color:var(--texto-suave);border:1px dashed var(--borde);}
+.btn-acum-vacio:hover{background:var(--azul-claro);border-color:var(--cian);color:#0E7C90;}
 /* fila con la causa base destacada: tinte celeste suave para que resalte en la lista */
 tr.fila-tiene-acumuladas td{background:#F2FBFD!important;}
 tr.fila-tiene-acumuladas:hover td{background:#E6F7FA!important;}
@@ -701,8 +707,8 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
           <table class="datos tabla-stock-ajustada" id="tablaStock">
             <colgroup>
               <col style="width:34px"><col style="width:52px"><col style="width:52px"><col style="width:150px">
-              <col style="width:193px"><col style="width:50px"><col style="width:145px">
-              <col style="width:140px"><col style="width:48px"><col style="width:58px"><col style="width:150px"><col style="width:115px">
+              <col style="width:159px"><col style="width:50px"><col style="width:145px">
+              <col style="width:140px"><col style="width:48px"><col style="width:92px"><col style="width:150px"><col style="width:115px">
               <col style="width:100px"><col style="width:100px"><col style="width:80px">
             </colgroup>
             <thead><tr><th></th><th>ROL</th><th>AÑO</th><th>LIBRO</th><th>MATERIA</th><th>TIPO</th><th>COMPLEJIDAD</th>
@@ -2586,17 +2592,16 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       var tieneRija = String(c.rija||'').toUpperCase().indexOf('RIJA') > -1;
       var pesca = esPesca(c);
       var nAcum = contarAcumuladasDe(c.idFila);
-      var badgeEstado = c.acumulada
-        ? ' <button type="button" class="badge-es-acumulada btnVerBaseAcumulada" data-id="'+c.idFila+'" title="Acumulada a ROL '+escaparAtributo(c.causaBaseRol||'')+'/'+escaparAtributo(c.causaBaseAnio||'') + ' — clic para ver el detalle">Acumulada</button>'
-        : '';
       var celdaAcum = c.acumulada
-        ? '<span title="Es una causa acumulada">—</span>'
-        : '<input type="checkbox" class="chk-acum" data-id="'+c.idFila+'" '+(nAcum?'checked':'')+' title="'+(nAcum?nAcum+' causa(s) acumulada(s) — clic para ver/agregar':'Marcar para agregar una causa acumulada a esta')+'">';
+        ? '<button type="button" class="btn-acum-celda badge-es-acumulada" data-id="'+c.idFila+'" title="Acumulada a ROL '+escaparAtributo(c.causaBaseRol||'')+'/'+escaparAtributo(c.causaBaseAnio||'')+' — clic para ver el detalle">Acumulada</button>'
+        : (nAcum
+          ? '<button type="button" class="btn-acum-celda badge-tiene-acumuladas" data-id="'+c.idFila+'" title="Tiene '+nAcum+' causa(s) acumulada(s) — clic para ver el detalle">'+nAcum+' acum.</button>'
+          : '<button type="button" class="btn-acum-celda btn-acum-vacio" data-id="'+c.idFila+'" title="Acumular una causa a esta">+ Acum.</button>');
       var claseFilaAcum = c.acumulada ? 'fila-es-acumulada ' : (nAcum ? 'fila-tiene-acumuladas ' : '');
       return '<tr class="fila-clicable '+claseFilaAcum+(esDup?'fila-duplicada ':(pesca?'fila-pesca ':''))+(marcada?'fila-seleccionada':'')+'" data-id="'+c.idFila+'">'+
         '<td><input type="checkbox" data-id="'+c.idFila+'" class="chkStock" '+(marcada?'checked':'')+(c.acumulada?' disabled title="Las causas acumuladas no se traspasan por sí solas"':'')+'></td>'+
         '<td>'+(c.rol||'')+'</td><td>'+(c.anio||'')+'</td><td class="celda-libro" title="'+escaparAtributo(c.libro||'')+'">'+(c.libro||'')+'</td>'+celdaMateria(c)+
-        '<td>'+(c.tipo||'')+'</td><td>'+construirSelectComplejidad(c)+'</td><td>'+construirSelectEstado(c)+badgeEstado+'</td>'+
+        '<td>'+(c.tipo||'')+'</td><td>'+construirSelectComplejidad(c)+'</td><td>'+construirSelectEstado(c)+'</td>'+
         '<td><input type="checkbox" class="chk-rija chkRija" data-id="'+c.idFila+'" '+(tieneRija?'checked':'')+'></td>'+
         '<td>'+celdaAcum+'</td>'+
         '<td class="celda-suspension" data-id="'+c.idFila+'">'+textoSuspension(c)+'</td>'+
@@ -2673,21 +2678,20 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         });
       });
     });
-    tbody.querySelectorAll('.chk-acum').forEach(function(chk){
-      chk.addEventListener('click', function(e){
-        e.stopPropagation();
-        e.preventDefault(); // no es un valor que se guarde directo: el clic siempre abre el modal
-        var causa = estado.causas.find(function(c){return String(c.idFila)===String(chk.dataset.id);});
-        abrirModalAcumulada(causa);
-      });
-    });
-    tbody.querySelectorAll('.btnVerBaseAcumulada').forEach(function(btn){
+    // Columna ACUM.: un único botón por fila, sea "Acumulada", "N acum." o "+ Acum." —
+    // siempre abre el modal centrado en la causa BASE correspondiente.
+    tbody.querySelectorAll('.btn-acum-celda').forEach(function(btn){
       btn.addEventListener('click', function(e){
         e.stopPropagation();
         var causa = estado.causas.find(function(c){return String(c.idFila)===String(btn.dataset.id);});
-        var base = causa && estado.causas.find(function(c){return String(c.idFila)===String(causa.causaBaseId);});
-        if(base) abrirModalAcumulada(base);
-        else mostrarToast('No se encontró la causa base (puede haber sido eliminada).', 'error');
+        if(!causa) return;
+        if(causa.acumulada){
+          var base = estado.causas.find(function(c){return String(c.idFila)===String(causa.causaBaseId);});
+          if(base) abrirModalAcumulada(base);
+          else mostrarToast('No se encontró la causa base (puede haber sido eliminada).', 'error');
+        } else {
+          abrirModalAcumulada(causa);
+        }
       });
     });
   }
