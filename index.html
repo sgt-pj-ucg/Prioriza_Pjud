@@ -1646,7 +1646,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     llamarServicio({accion:'listar'}).then(function(datos){
       estado.causas = datos.causas;
       estado.config = datos.config;
-      actualizarSnapshotDashboard(estado.causas);
+      actualizarSnapshotDashboard(estado.causas.filter(function(c){ return !c.acumulada; }));
       poblarFiltroLibro(document.getElementById('filtroLibroStock'), estado.causas);
       poblarFiltroLibro(document.getElementById('filtroLibroDashboard'), estado.causas);
       poblarFiltroLibro(document.getElementById('filtroLibroReportes'), estado.causas);
@@ -1791,7 +1791,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   /** Exporta a CSV (se abre directo en Excel) el listado que está filtrado
    *  en pantalla — completo, no solo las 300 filas que se muestran. */
   function exportarExcelReportes(){
-    var causas = causasFiltradasReportes(estado.causas);
+    var causas = causasFiltradasReportes(estado.causas.filter(function(c){ return !c.acumulada; }));
     var encabezados = ['ROL','AÑO','LIBRO','MATERIA','TIPO','ESTADO','FECHA RELACIÓN'];
     var filas = causas.map(function(c){
       return [c.rol, c.anio, c.libro, materiaLimpia(c.materia), c.tipo, c.estado, c.fechaRelacion];
@@ -1817,7 +1817,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
    *  el listado COMPLETO filtrado (no las 300 filas de pantalla) al área imprimible,
    *  imprime, y al cerrar el diálogo restaura la vista normal. */
   function exportarPdfReportes(){
-    var completo = causasFiltradasReportes(estado.causas);
+    var completo = causasFiltradasReportes(estado.causas.filter(function(c){ return !c.acumulada; }));
     document.getElementById('fechaImpresionReportes').textContent =
       'Generado el '+new Date().toLocaleString('es-CL')+' · '+completo.length+' causa(s)';
     var tbody = document.querySelector('#tablaReportes tbody');
@@ -1833,7 +1833,11 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   }
 
   function renderReportesLocal(){
-    var causas = estado.causas;
+    // "Total en stock" incluye TODO (coincide con el encabezado); el resto de los
+    // indicadores (por estado, materia, tipo) excluye las acumuladas — igual que Dashboard.
+    var totalStock = estado.causas.length;
+    var causas = estado.causas.filter(function(c){ return !c.acumulada; });
+    var acumuladas = estado.causas.length - causas.length;
     var porEstado = {};
     causas.forEach(function(c){ var e=c.estado||'Sin estado'; porEstado[e]=(porEstado[e]||0)+1; });
 
@@ -1843,7 +1847,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var total = document.createElement('div');
     total.className = 'kpi'+(estado.filtroReportes===null?' activo':'');
     total.style.borderLeftColor = 'var(--azul-profundo)';
-    total.innerHTML = '<div class="num">'+causas.length+'</div><div class="lbl">Total en stock</div>';
+    total.innerHTML = '<div class="num">'+totalStock+'</div><div class="lbl">Total en stock</div>';
     total.addEventListener('click', function(){ estado.filtroReportes=null; renderReportesLocal(); });
     kpis.appendChild(total);
 
@@ -1859,6 +1863,13 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       });
       kpis.appendChild(div);
     });
+
+    var divAcum = document.createElement('div');
+    divAcum.className = 'kpi';
+    divAcum.style.borderLeftColor = 'var(--cian)';
+    divAcum.title = 'Causas acumuladas a otra — no compiten por sí solas en el Índice de Prioridad';
+    divAcum.innerHTML = '<div class="num">'+acumuladas+'</div><div class="lbl">Acumuladas</div>';
+    kpis.appendChild(divAcum);
 
     var chipCont = document.getElementById('chipFiltroReportes');
     chipCont.innerHTML = '';
@@ -2012,9 +2023,11 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var libroElegido = document.getElementById('filtroLibroDashboard').value;
     var causasLibro = libroElegido ? estado.causas.filter(function(c){ return String(c.libro||'').trim()===libroElegido; }) : estado.causas;
     var acumuladas = causasLibro.filter(function(c){ return !!c.acumulada; });
-    // las causas acumuladas quedan fuera de todos los indicadores de gestión — se muestran aparte
+    // las causas acumuladas quedan fuera de todos los indicadores de gestión — se muestran aparte.
+    // "Total en stock" sí las incluye (coincide con el encabezado: es TODO lo que hay cargado).
     var causas = causasLibro.filter(function(c){ return !c.acumulada; });
-    var total = causas.length;
+    var totalStock = causasLibro.length;
+    var total = causas.length; // universo de gestión (sin acumuladas) — base del % de cumplimiento
     var porEstado = {};
     causas.forEach(function(c){ var e=c.estado||'Sin estado'; porEstado[e]=(porEstado[e]||0)+1; });
     var disponibles = porEstado['Disponible']||0;
@@ -2028,7 +2041,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
     var conDelta = !libroElegido && deltaDashboard; // el delta se calculó sobre el total sin filtrar
     var kpis = [
-      { tipo:null, valor:null, num:total, sufijo:'', lbl:'Total en stock', color:'var(--azul-profundo)',
+      { tipo:null, valor:null, num:totalStock, sufijo:'', lbl:'Total en stock', color:'var(--azul-profundo)',
         tendencia: badgeTendenciaNeutral(conDelta ? deltaDashboard.total : null) },
       { tipo:'estado', valor:'Disponible', num:disponibles, sufijo:'', lbl:'Disponibles', color:'var(--verde)' },
       { tipo:'estado', valor:'En Tabla', num:enTabla, sufijo:'', lbl:'En Tabla', color:'var(--azul-medio)' },
@@ -2063,7 +2076,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     dibujarGraficoEstado(porEstado);
     dibujarGraficoMaterias(causas);
     dibujarGraficoIngresos(causas);
-    renderDetalleDashboard(causas, conRija, vencidas, acumuladas);
+    renderDetalleDashboard(causas, conRija, vencidas, acumuladas, causasLibro);
   }
 
   /** Al hacer clic en un KPI o en un gráfico, el detalle de abajo cambia pero
@@ -2078,8 +2091,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     tarjeta.classList.add('destello');
   }
 
-  function renderDetalleDashboard(causas, conRija, vencidas, acumuladas){
-    var lista = causas;
+  function renderDetalleDashboard(causas, conRija, vencidas, acumuladas, causasLibro){
+    var lista = causasLibro || causas; // sin filtro activo: coincide con "Total en stock" (incluye acumuladas)
     if(filtroDashboard){
       if(filtroDashboard.tipo==='estado') lista = causas.filter(function(c){ return c.estado===filtroDashboard.valor; });
       else if(filtroDashboard.tipo==='gestionadas') lista = causas.filter(function(c){ return c.estado==='En Tabla' || c.estado==='Desistida'; });
