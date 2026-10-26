@@ -726,9 +726,6 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
           </div>
         </div>
         <div id="acumLibroResuelto" class="acum-libro-resuelto"></div>
-        <label class="campo-label">Materia *</label>
-        <input type="text" id="acumMateria" class="buscador" placeholder="Ej: Obligación de dar, cumplimiento" list="listaMateriasExistentes" autocomplete="off">
-        <datalist id="listaMateriasExistentes"></datalist>
 
         <div class="popup-acciones">
           <button class="btn btn-secundario" id="btnCancelarAcumulada">Cerrar</button>
@@ -1520,13 +1517,12 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   /** Crea una causa "acumulada": registro liviano vinculado a una causa base,
    *  que no compite en el Índice de Prioridad ni suma a los "Disponibles". */
   function accionAgregarAcumulada(datos){
-    if(!datos || !datos.rol || !datos.anio || !datos.materia){
-      return Promise.reject(new Error('ROL, AÑO y MATERIA son obligatorios.'));
+    if(!datos || !datos.rol || !datos.anio || !datos.libro){
+      return Promise.reject(new Error('ROL, AÑO y LIBRO son obligatorios.'));
     }
     if(!datos.causaBaseId) return Promise.reject(new Error('Debes elegir la causa base.'));
     var obj = {
-      rol: String(datos.rol).trim(), anio: String(datos.anio).trim(), materia: String(datos.materia).trim(),
-      libro: String(datos.libro||'').trim(), // siempre el mismo libro de la causa base
+      rol: String(datos.rol).trim(), anio: String(datos.anio).trim(), libro: String(datos.libro).trim(),
       estado: 'Disponible', acumulada: true,
       causaBaseId: datos.causaBaseId, causaBaseRol: datos.causaBaseRol||'', causaBaseAnio: datos.causaBaseAnio||''
     };
@@ -2916,10 +2912,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       'Causa base: ROL '+(causaBase.rol||'')+'/'+(causaBase.anio||'')+' · '+(causaBase.libro||'');
     document.getElementById('acumRol').value = '';
     document.getElementById('acumAnio').value = '';
-    document.getElementById('acumMateria').value = '';
     document.getElementById('acumLibroResuelto').innerHTML = '';
     libroResueltoAcumulada = null;
-    poblarListaMateriasExistentes(causaBase.libro);
     renderListaAcumuladaModal();
     modalAcumulada.classList.remove('oculto');
   }
@@ -2960,21 +2954,6 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   document.getElementById('acumRol').addEventListener('input', actualizarLibroResuelto);
   document.getElementById('acumAnio').addEventListener('input', actualizarLibroResuelto);
 
-  /** Lista (datalist) de materias ya usadas en el mismo libro, para que el
-   *  funcionario elija de lo existente en vez de escribir texto libre cada vez. */
-  function poblarListaMateriasExistentes(libro){
-    var vistas = {};
-    var materias = [];
-    estado.causas.forEach(function(c){
-      if(libro && String(c.libro||'').trim()!==String(libro).trim()) return;
-      var m = materiaLimpia(c.materia);
-      if(m && !vistas[m]){ vistas[m]=true; materias.push(m); }
-    });
-    materias.sort(function(a,b){ return a.localeCompare(b,'es'); });
-    document.getElementById('listaMateriasExistentes').innerHTML =
-      materias.map(function(m){ return '<option value="'+escaparAtributo(m)+'">'; }).join('');
-  }
-
   function cerrarModalAcumulada(){
     modalAcumulada.classList.add('oculto');
     baseAcumulada = null;
@@ -2986,7 +2965,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var lista = estado.causas.filter(function(c){ return c.acumulada && String(c.causaBaseId)===String(baseAcumulada.idFila); });
     cont.innerHTML = lista.map(function(c){
       return '<div class="acumulada-item">'+
-        '<div><div class="rol-anio">ROL '+(c.rol||'')+'/'+(c.anio||'')+'</div><div class="materia">'+(c.materia||'—')+'</div></div>'+
+        '<div><div class="rol-anio">ROL '+(c.rol||'')+'/'+(c.anio||'')+'</div><div class="materia">'+(c.libro||'—')+'</div></div>'+
         '<button type="button" class="btn-eliminar-acum" data-id="'+c.idFila+'">Quitar</button>'+
         '</div>';
     }).join('') || '<div class="vacio">Esta causa aún no tiene acumuladas. Agrega la primera abajo.</div>';
@@ -3014,18 +2993,18 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     if(!baseAcumulada) return;
     var rol = document.getElementById('acumRol').value.trim();
     var anio = document.getElementById('acumAnio').value.trim();
-    var materia = document.getElementById('acumMateria').value.trim();
-    if(!rol || !anio || !materia){ mostrarToast('ROL, AÑO y MATERIA son obligatorios.', 'error'); return; }
+    if(!rol || !anio){ mostrarToast('ROL y AÑO son obligatorios.', 'error'); return; }
     var btn = this;
     var libroFinal = libroResueltoAcumulada || baseAcumulada.libro;
+    if(!libroFinal){ mostrarToast('No se pudo determinar el libro.', 'error'); return; }
     confirmarAccion(
-      '¿Agregar la causa ROL '+rol+'/'+anio+' · '+libroFinal+' ("'+materia+'") como acumulada de la causa base ROL '+baseAcumulada.rol+'/'+baseAcumulada.anio+'?',
+      '¿Agregar la causa ROL '+rol+'/'+anio+' · '+libroFinal+' como acumulada de la causa base ROL '+baseAcumulada.rol+'/'+baseAcumulada.anio+'?',
       {textoOk:'Sí, agregar'}
     ).then(function(ok){
       if(!ok) return;
       btn.disabled = true; btn.textContent = 'Guardando...';
       llamarServicio({accion:'agregarAcumulada', datos:{
-        rol:rol, anio:anio, materia:materia, libro: libroFinal,
+        rol:rol, anio:anio, libro: libroFinal,
         causaBaseId: baseAcumulada.idFila, causaBaseRol: baseAcumulada.rol, causaBaseAnio: baseAcumulada.anio
       }}).then(function(){
         return llamarServicio({accion:'listar'});
@@ -3035,7 +3014,6 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         renderListaAcumuladaModal();
         document.getElementById('acumRol').value = '';
         document.getElementById('acumAnio').value = '';
-        document.getElementById('acumMateria').value = '';
         document.getElementById('acumLibroResuelto').innerHTML = '';
         libroResueltoAcumulada = null;
         document.getElementById('acumRol').focus();
