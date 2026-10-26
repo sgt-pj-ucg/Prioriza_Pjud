@@ -304,6 +304,46 @@ table.datos#tablaStock th{white-space:normal;line-height:1.2;vertical-align:bott
 .tabla-stock-ajustada .sel-estado{max-width:100%;width:100%;padding:4px 6px;font-size:10.5px;}
 .tabla-stock-ajustada td.celda-acciones .btn{padding:4px 7px;font-size:10.5px;border-radius:6px;white-space:nowrap;}
 
+/* -------- Stock de Causas: layout en 2 columnas para aprovechar pantallas anchas -------- */
+.layout-stock{display:flex;gap:var(--e3);align-items:flex-start;}
+.col-stock-principal{flex:1;min-width:0;}
+.col-stock-acumuladas{width:300px;flex:none;position:sticky;top:12px;}
+@media (max-width:1650px){
+  .layout-stock{flex-direction:column;}
+  .col-stock-acumuladas{width:100%;position:static;}
+}
+.chips-tipos{margin-left:0;}
+
+/* -------- panel e indicadores de causas acumuladas -------- */
+.acumuladas-titulo{margin:0 0 4px;color:var(--azul-profundo);font-size:16px;}
+.acumuladas-contador{font-size:40px;font-weight:800;color:var(--ambar);line-height:1;margin-top:10px;}
+.acumuladas-contador-lbl{font-size:12px;color:var(--texto-suave);margin-bottom:14px;}
+.acumuladas-btn-agregar{width:100%;justify-content:center;margin-bottom:14px;}
+.acumuladas-lista{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;}
+.acumuladas-lista .vacio{color:var(--texto-suave);font-size:12.5px;text-align:center;padding:14px 4px;}
+.acumulada-item{border:1px solid var(--borde);border-radius:8px;padding:8px 10px;font-size:12.5px;}
+.acumulada-item .rol-anio{font-weight:700;color:var(--azul-profundo);}
+.acumulada-item .materia{color:var(--texto);margin-top:2px;}
+.acumulada-item .base{color:var(--texto-suave);font-size:11px;margin-top:4px;}
+.acumulada-item .acciones{display:flex;justify-content:flex-end;margin-top:6px;}
+.acumulada-item .btn-eliminar-acum{background:none;border:none;color:var(--rojo);font-size:11.5px;font-weight:600;cursor:pointer;padding:2px 4px;}
+
+.badge-acumuladas{display:inline-block;margin-left:6px;background:#fdf3e3;color:var(--ambar);font-size:10px;
+  font-weight:700;padding:2px 7px;border-radius:999px;cursor:pointer;white-space:nowrap;border:none;}
+.badge-es-acumulada{display:inline-block;background:#fdf3e3;color:var(--ambar);font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:999px;white-space:nowrap;}
+
+/* -------- modal agregar causa acumulada -------- */
+.campo-label{display:block;font-size:12px;font-weight:600;color:var(--texto-suave);margin:12px 0 4px;}
+.fila-campos-acumulada{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.resultados-base-acumulada{border:1px solid var(--borde);border-radius:8px;margin-top:4px;max-height:180px;overflow-y:auto;}
+.resultado-base-item{padding:8px 10px;font-size:12.5px;cursor:pointer;border-bottom:1px solid var(--borde);}
+.resultado-base-item:hover{background:var(--azul-claro);}
+.resultado-base-item:last-child{border-bottom:none;}
+.chip-base-elegida{margin-top:8px;background:var(--azul-claro);border-radius:8px;padding:8px 10px;
+  font-size:12.5px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.chip-base-elegida .x{cursor:pointer;color:var(--rojo);font-weight:700;}
+
 /* columna de acciones (Eliminar) fija a la derecha: siempre visible aunque haya scroll horizontal */
 th.col-acciones{right:0;z-index:3;}
 td.celda-acciones{position:sticky;right:0;background:var(--superficie);
@@ -616,7 +656,8 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
 
     <!-- ===== 3. STOCK ===== -->
     <section id="vista-stock" class="oculto">
-      <div class="tarjeta">
+      <div class="layout-stock">
+      <div class="tarjeta col-stock-principal">
         <h2>Stock completo de causas</h2>
         <div class="fila-acciones">
           <div class="buscador-cont">
@@ -643,6 +684,13 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
           <span class="fila-anios-stock-lbl">Año relación:</span>
           <div class="chips-anios" id="chipsAniosStock"></div>
         </div>
+        <div class="fila-anios-stock" id="filaTiposStock">
+          <span class="fila-anios-stock-lbl">Tipo:</span>
+          <div class="chips-anios chips-tipos" id="chipsTiposStock">
+            <button type="button" class="chip-anio" data-tipo="D">D · Definitiva</button>
+            <button type="button" class="chip-anio" data-tipo="A">A · Artículo</button>
+          </div>
+        </div>
         <div class="fila-contador-stock">
           <span class="contador-stock" id="contadorStock">0 causa(s)</span>
         </div>
@@ -661,7 +709,48 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
           </table>
         </div>
       </div>
+
+      <div class="tarjeta col-stock-acumuladas">
+        <h3 class="acumuladas-titulo">Causas acumuladas</h3>
+        <p class="subt">Causas que se tramitan junto a otra (causa base) y no deben competir por sí solas en el Índice de Prioridad.</p>
+        <div class="acumuladas-contador" id="acumuladasContador">0</div>
+        <div class="acumuladas-contador-lbl">acumulada(s) registrada(s)</div>
+        <button class="btn btn-primario acumuladas-btn-agregar" id="btnAbrirAcumulada">+ Agregar causa acumulada</button>
+        <div class="acumuladas-lista" id="listaAcumuladas"></div>
+      </div>
+      </div>
     </section>
+
+    <!-- ===== MODAL: agregar causa acumulada ===== -->
+    <div id="modalAcumulada" class="drawer-fondo oculto">
+      <div class="drawer-panel">
+        <h3>Agregar causa acumulada</h3>
+        <p class="subt">Se vincula a una causa base ya existente. La causa base sigue "Disponible" y compite en el Índice de Prioridad; la acumulada no.</p>
+
+        <label class="campo-label">Causa base (busca por ROL o AÑO)</label>
+        <input type="text" id="buscarBaseAcumulada" class="buscador" placeholder="Ej: 193 o 193/2026" autocomplete="off">
+        <div class="resultados-base-acumulada oculto" id="resultadosBaseAcumulada"></div>
+        <div class="chip-base-elegida oculto" id="chipBaseElegida"></div>
+
+        <div class="fila-campos-acumulada">
+          <div>
+            <label class="campo-label">ROL *</label>
+            <input type="text" id="acumRol" class="buscador">
+          </div>
+          <div>
+            <label class="campo-label">AÑO *</label>
+            <input type="text" id="acumAnio" class="buscador">
+          </div>
+        </div>
+        <label class="campo-label">Materia *</label>
+        <input type="text" id="acumMateria" class="buscador" placeholder="Ej: Obligación de dar, cumplimiento">
+
+        <div class="popup-acciones">
+          <button class="btn btn-secundario" id="btnCancelarAcumulada">Cancelar</button>
+          <button class="btn btn-primario" id="btnGuardarAcumulada">Agregar</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ===== TRASPASO SITCORTE ===== -->
     <section id="vista-traspaso" class="oculto">
@@ -1171,7 +1260,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
   var PUNTAJES_LIBRO_DEFECTO = [300, 200, 100, 50, 25];
   var CAMPOS_CAUSA = ['rol','anio','libro','fechaIngreso','observacion','fechaRelacion','materia',
-    'complejidad','tipo','estado','rija','fechaSuspension','diasSuspension','comentarios'];
+    'complejidad','tipo','estado','rija','fechaSuspension','diasSuspension','comentarios',
+    'acumulada','causaBaseId','causaBaseRol','causaBaseAnio'];
 
   function claveCruce(rol, anio, libro){
     return String(rol||'')+'|'+String(anio||'')+'|'+String(libro||'').trim().toUpperCase();
@@ -1226,6 +1316,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         case 'confirmarTabla': return accionConfirmarTabla(cuerpo.idsFila||[]);
         case 'actualizarCausa': return accionActualizarCausa(cuerpo.idFila, cuerpo.cambios||{});
         case 'eliminarFila': return accionEliminarFila(cuerpo.idFila);
+        case 'agregarAcumulada': return accionAgregarAcumulada(cuerpo.datos);
         default: return Promise.reject(new Error('Acción no reconocida: '+cuerpo.accion));
       }
     }, function(){
@@ -1375,6 +1466,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
    *  en JS con los datos que ya están en memoria tras el último "listar"). */
   function accionGenerarRanking(){
     var causas = estado.causas.filter(function(c){
+      if(c.acumulada) return false; // las causas acumuladas no compiten por sí solas en el índice
       if(c.estado === 'Disponible') return true;
       if(c.estado === 'Suspendida Procedimiento'){
         var dias = diasParaReanudarLocal(c);
@@ -1438,6 +1530,21 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   function accionEliminarFila(idFila){
     if(!idFila) return Promise.reject(new Error('idFila inválido.'));
     return db.collection('causas').doc(String(idFila)).delete().then(function(){ return { ok:true }; });
+  }
+
+  /** Crea una causa "acumulada": registro liviano vinculado a una causa base,
+   *  que no compite en el Índice de Prioridad ni suma a los "Disponibles". */
+  function accionAgregarAcumulada(datos){
+    if(!datos || !datos.rol || !datos.anio || !datos.materia){
+      return Promise.reject(new Error('ROL, AÑO y MATERIA son obligatorios.'));
+    }
+    if(!datos.causaBaseId) return Promise.reject(new Error('Debes elegir la causa base.'));
+    var obj = {
+      rol: String(datos.rol).trim(), anio: String(datos.anio).trim(), materia: String(datos.materia).trim(),
+      estado: 'Disponible', acumulada: true,
+      causaBaseId: datos.causaBaseId, causaBaseRol: datos.causaBaseRol||'', causaBaseAnio: datos.causaBaseAnio||''
+    };
+    return db.collection('causas').add(obj).then(function(ref){ return { ok:true, idFila: ref.id }; });
   }
 
   /* ---------------- login ---------------- */
@@ -1574,7 +1681,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
   function actualizarResumenHeader(){
     var total = estado.causas.length;
-    var disponibles = estado.causas.filter(function(c){return c.estado==='Disponible';}).length;
+    var disponibles = estado.causas.filter(function(c){return c.estado==='Disponible' && !c.acumulada;}).length;
     document.getElementById('resumenHeader').textContent =
       total + ' causas en stock · ' + disponibles + ' disponibles para el Índice de Prioridad';
     document.getElementById('horaActualizado').textContent =
@@ -1922,7 +2029,10 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   function renderDashboard(){
     if(!document.getElementById('kpisDashboard')) return;
     var libroElegido = document.getElementById('filtroLibroDashboard').value;
-    var causas = libroElegido ? estado.causas.filter(function(c){ return String(c.libro||'').trim()===libroElegido; }) : estado.causas;
+    var causasLibro = libroElegido ? estado.causas.filter(function(c){ return String(c.libro||'').trim()===libroElegido; }) : estado.causas;
+    var acumuladas = causasLibro.filter(function(c){ return !!c.acumulada; });
+    // las causas acumuladas quedan fuera de todos los indicadores de gestión — se muestran aparte
+    var causas = causasLibro.filter(function(c){ return !c.acumulada; });
     var total = causas.length;
     var porEstado = {};
     causas.forEach(function(c){ var e=c.estado||'Sin estado'; porEstado[e]=(porEstado[e]||0)+1; });
@@ -1944,7 +2054,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       { tipo:'gestionadas', valor:null, num:cumplimiento, sufijo:'%', lbl:'Cumplimiento (gestionadas)', color:'var(--acento)',
         tendencia: badgeTendenciaCumplimiento(conDelta ? deltaDashboard.cumplimiento : null) },
       { tipo:'rija', valor:null, num:conRija.length, sufijo:'', lbl:'RIJA pendientes', color:'var(--rojo)' },
-      { tipo:'vencida', valor:null, num:vencidas.length, sufijo:'', lbl:'Suspensión vencida', color:'var(--purpura)' }
+      { tipo:'vencida', valor:null, num:vencidas.length, sufijo:'', lbl:'Suspensión vencida', color:'var(--purpura)' },
+      { tipo:'acumuladas', valor:null, num:acumuladas.length, sufijo:'', lbl:'Causas acumuladas', color:'var(--ambar)' }
     ];
 
     var cont = document.getElementById('kpisDashboard');
@@ -1971,7 +2082,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     dibujarGraficoEstado(porEstado);
     dibujarGraficoMaterias(causas);
     dibujarGraficoIngresos(causas);
-    renderDetalleDashboard(causas, conRija, vencidas);
+    renderDetalleDashboard(causas, conRija, vencidas, acumuladas);
   }
 
   /** Al hacer clic en un KPI o en un gráfico, el detalle de abajo cambia pero
@@ -1986,13 +2097,14 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     tarjeta.classList.add('destello');
   }
 
-  function renderDetalleDashboard(causas, conRija, vencidas){
+  function renderDetalleDashboard(causas, conRija, vencidas, acumuladas){
     var lista = causas;
     if(filtroDashboard){
       if(filtroDashboard.tipo==='estado') lista = causas.filter(function(c){ return c.estado===filtroDashboard.valor; });
       else if(filtroDashboard.tipo==='gestionadas') lista = causas.filter(function(c){ return c.estado==='En Tabla' || c.estado==='Desistida'; });
       else if(filtroDashboard.tipo==='rija') lista = conRija;
       else if(filtroDashboard.tipo==='vencida') lista = vencidas;
+      else if(filtroDashboard.tipo==='acumuladas') lista = acumuladas||[];
       else if(filtroDashboard.tipo==='materia') lista = causas.filter(function(c){
         return materiaLimpia(c.materia)===filtroDashboard.valor && PENDIENTES_ESTADOS[c.estado];
       });
@@ -2156,7 +2268,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
    *  entrega hoy a jefatura, pero calculada en vivo y presentada como reporte. */
   function renderInformeMensual(){
     if(!document.getElementById('tablaInformeResumen')) return;
-    var causas = estado.causas.filter(function(c){ return c.estado==='Disponible'; });
+    var causas = estado.causas.filter(function(c){ return c.estado==='Disponible' && !c.acumulada; });
 
     var pivot = {};
     causas.forEach(function(c){
@@ -2352,6 +2464,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     return m[3]+'-'+('0'+m[2]).slice(-2);
   }
 
+  var filtroTipoStock = '';
+
   function causasFiltradas(){
     var texto = (document.getElementById('buscadorStock').value||'').toLowerCase();
     var filtroEstado = document.getElementById('filtroEstadoStock').value;
@@ -2360,6 +2474,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var relacionHasta = document.getElementById('filtroRelacionHasta').value;
     return estado.causas.filter(function(c){
       if(filtroEstado && c.estado!==filtroEstado) return false;
+      if(filtroTipoStock && String(c.tipo||'').trim().toUpperCase()!==filtroTipoStock) return false;
       if(filtroLibro && String(c.libro||'').trim()!==filtroLibro) return false;
       if(relacionDesde || relacionHasta){
         var mesAnio = mesAnioDeFecha(c.fechaRelacion);
@@ -2411,6 +2526,25 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     });
   }
 
+  function renderChipsTiposStock(){
+    var cont = document.getElementById('chipsTiposStock');
+    if(!cont) return;
+    cont.querySelectorAll('.chip-anio').forEach(function(btn){
+      btn.classList.toggle('activo', btn.dataset.tipo===filtroTipoStock);
+    });
+  }
+
+  (function(){
+    var cont = document.getElementById('chipsTiposStock');
+    if(!cont) return;
+    cont.querySelectorAll('.chip-anio').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        filtroTipoStock = (filtroTipoStock===btn.dataset.tipo) ? '' : btn.dataset.tipo;
+        renderStock();
+      });
+    });
+  })();
+
   var soloDuplicados = false;
 
   var OPCIONES_COMPLEJIDAD = ['', 'Estudio (E)', 'Compleja (A)', 'Mediana complejidad (B)', 'No compleja (C)'];
@@ -2461,6 +2595,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     if(soloDuplicados) lista = lista.filter(function(c){return duplicados[c.idFila];});
 
     renderChipsAniosStock();
+    renderChipsTiposStock();
+    renderPanelAcumuladas();
 
     var contador = document.getElementById('contadorStock');
     if(contador){
@@ -2475,10 +2611,14 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       var marcada = !!estado.seleccionStaging[c.idFila];
       var tieneRija = String(c.rija||'').toUpperCase().indexOf('RIJA') > -1;
       var pesca = esPesca(c);
+      var nAcum = contarAcumuladasDe(c.idFila);
+      var badgeEstado = c.acumulada
+        ? ' <span class="badge-es-acumulada" title="Acumulada a ROL '+escaparAtributo(c.causaBaseRol||'')+'/'+escaparAtributo(c.causaBaseAnio||'')+'">Acumulada</span>'
+        : (nAcum ? ' <button type="button" class="badge-acumuladas btnVerAcumuladas" data-id="'+c.idFila+'" title="Agregar otra causa acumulada a esta">'+nAcum+' acumulada'+(nAcum>1?'s':'')+'</button>' : '');
       return '<tr class="fila-clicable '+(esDup?'fila-duplicada ':(pesca?'fila-pesca ':''))+(marcada?'fila-seleccionada':'')+'" data-id="'+c.idFila+'">'+
-        '<td><input type="checkbox" data-id="'+c.idFila+'" class="chkStock" '+(marcada?'checked':'')+'></td>'+
+        '<td><input type="checkbox" data-id="'+c.idFila+'" class="chkStock" '+(marcada?'checked':'')+(c.acumulada?' disabled title="Las causas acumuladas no se traspasan por sí solas"':'')+'></td>'+
         '<td>'+(c.rol||'')+'</td><td>'+(c.anio||'')+'</td><td class="celda-libro" title="'+escaparAtributo(c.libro||'')+'">'+(c.libro||'')+'</td>'+celdaMateria(c)+
-        '<td>'+(c.tipo||'')+'</td><td>'+construirSelectComplejidad(c)+'</td><td>'+construirSelectEstado(c)+'</td>'+
+        '<td>'+(c.tipo||'')+'</td><td>'+construirSelectComplejidad(c)+'</td><td>'+construirSelectEstado(c)+badgeEstado+'</td>'+
         '<td><input type="checkbox" class="chk-rija chkRija" data-id="'+c.idFila+'" '+(tieneRija?'checked':'')+'></td>'+
         '<td class="celda-suspension" data-id="'+c.idFila+'">'+textoSuspension(c)+'</td>'+
         '<td class="celda-reanudar" data-id="'+c.idFila+'">'+textoDiasReanudar(c)+'</td>'+
@@ -2554,6 +2694,13 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         });
       });
     });
+    tbody.querySelectorAll('.btnVerAcumuladas').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var causa = estado.causas.find(function(c){return String(c.idFila)===String(btn.dataset.id);});
+        abrirModalAcumulada(causa);
+      });
+    });
   }
 
   /** Muestra/oculta el botón "×" de un buscador según tenga texto o no. */
@@ -2584,6 +2731,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     document.getElementById('filtroLibroStock').value='';
     document.getElementById('filtroRelacionDesde').value='';
     document.getElementById('filtroRelacionHasta').value='';
+    filtroTipoStock='';
     soloDuplicados=false;
     document.getElementById('btnDuplicados').innerHTML = ICONOS.duplicado+' Ver duplicados';
     renderStock();
@@ -2756,6 +2904,133 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       refrescarVistasDerivadas();
       cerrarModalEditar();
     }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Guardar cambios'; });
+  });
+
+  /* ================= CAUSAS ACUMULADAS ================= */
+  /** Cuenta cuántas causas acumuladas apuntan a una causa base dada. */
+  function contarAcumuladasDe(idFila){
+    return estado.causas.filter(function(c){ return c.acumulada && String(c.causaBaseId)===String(idFila); }).length;
+  }
+
+  function renderPanelAcumuladas(){
+    var contEl = document.getElementById('acumuladasContador');
+    var listaEl = document.getElementById('listaAcumuladas');
+    if(!contEl || !listaEl) return;
+    var acumuladas = estado.causas.filter(function(c){ return !!c.acumulada; })
+      .sort(function(a,b){ return String(a.causaBaseRol||'').localeCompare(String(b.causaBaseRol||'')); });
+    contEl.textContent = acumuladas.length;
+    listaEl.innerHTML = acumuladas.map(function(c){
+      return '<div class="acumulada-item">'+
+        '<div class="rol-anio">ROL '+(c.rol||'')+'/'+(c.anio||'')+'</div>'+
+        '<div class="materia">'+(c.materia||'—')+'</div>'+
+        '<div class="base">Base: ROL '+(c.causaBaseRol||'')+'/'+(c.causaBaseAnio||'')+'</div>'+
+        '<div class="acciones"><button type="button" class="btn-eliminar-acum" data-id="'+c.idFila+'">Quitar</button></div>'+
+        '</div>';
+    }).join('') || '<div class="vacio">Sin causas acumuladas registradas.</div>';
+    listaEl.querySelectorAll('.btn-eliminar-acum').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        confirmarAccion('¿Quitar esta causa acumulada? No se puede deshacer.', {peligro:true, textoOk:'Quitar'}).then(function(ok){
+          if(!ok) return;
+          llamarServicio({accion:'eliminarFila', idFila: btn.dataset.id}).then(function(){
+            return llamarServicio({accion:'listar'});
+          }).then(function(datos){
+            estado.causas = datos.causas;
+            refrescarVistasDerivadas();
+            mostrarToast('Causa acumulada eliminada.', 'exito');
+          }).catch(mostrarErrorGlobal);
+        });
+      });
+    });
+  }
+
+  var modalAcumulada = document.getElementById('modalAcumulada');
+  var baseElegidaAcumulada = null; // {idFila, rol, anio, libro}
+
+  function abrirModalAcumulada(causaBasePrefijada){
+    document.getElementById('buscarBaseAcumulada').value = '';
+    document.getElementById('resultadosBaseAcumulada').classList.add('oculto');
+    document.getElementById('acumRol').value = '';
+    document.getElementById('acumAnio').value = '';
+    document.getElementById('acumMateria').value = '';
+    baseElegidaAcumulada = null;
+    if(causaBasePrefijada) elegirBaseAcumulada(causaBasePrefijada);
+    else pintarChipBaseElegida();
+    modalAcumulada.classList.remove('oculto');
+    requestAnimationFrame(function(){ modalAcumulada.classList.add('abierto'); });
+  }
+
+  function cerrarModalAcumulada(){
+    modalAcumulada.classList.remove('abierto');
+    setTimeout(function(){ modalAcumulada.classList.add('oculto'); }, 220);
+  }
+
+  function pintarChipBaseElegida(){
+    var chip = document.getElementById('chipBaseElegida');
+    var buscador = document.getElementById('buscarBaseAcumulada');
+    if(!baseElegidaAcumulada){
+      chip.classList.add('oculto'); chip.innerHTML = '';
+      buscador.classList.remove('oculto');
+      return;
+    }
+    buscador.classList.add('oculto');
+    chip.classList.remove('oculto');
+    chip.innerHTML = '<span>Base: ROL '+(baseElegidaAcumulada.rol||'')+'/'+(baseElegidaAcumulada.anio||'')+' · '+(baseElegidaAcumulada.libro||'')+'</span><span class="x" id="btnQuitarBaseElegida">×</span>';
+    document.getElementById('btnQuitarBaseElegida').addEventListener('click', function(){
+      baseElegidaAcumulada = null;
+      pintarChipBaseElegida();
+      document.getElementById('buscarBaseAcumulada').focus();
+    });
+  }
+
+  function elegirBaseAcumulada(causa){
+    baseElegidaAcumulada = { idFila: causa.idFila, rol: causa.rol, anio: causa.anio, libro: causa.libro };
+    document.getElementById('resultadosBaseAcumulada').classList.add('oculto');
+    pintarChipBaseElegida();
+  }
+
+  document.getElementById('buscarBaseAcumulada').addEventListener('input', function(){
+    var texto = this.value.trim().toLowerCase();
+    var cont = document.getElementById('resultadosBaseAcumulada');
+    if(!texto){ cont.classList.add('oculto'); cont.innerHTML=''; return; }
+    var resultados = estado.causas.filter(function(c){
+      if(c.acumulada) return false;
+      var pack = (c.rol+'/'+c.anio).toLowerCase();
+      return pack.indexOf(texto) > -1;
+    }).slice(0,20);
+    cont.innerHTML = resultados.map(function(c){
+      return '<div class="resultado-base-item" data-id="'+c.idFila+'">ROL '+(c.rol||'')+'/'+(c.anio||'')+' · '+(c.libro||'')+' · '+materiaLimpia(c.materia)+'</div>';
+    }).join('') || '<div class="resultado-base-item">Sin resultados.</div>';
+    cont.classList.remove('oculto');
+    cont.querySelectorAll('.resultado-base-item[data-id]').forEach(function(div){
+      div.addEventListener('click', function(){
+        var causa = estado.causas.find(function(c){return String(c.idFila)===String(div.dataset.id);});
+        if(causa) elegirBaseAcumulada(causa);
+      });
+    });
+  });
+
+  document.getElementById('btnAbrirAcumulada').addEventListener('click', function(){ abrirModalAcumulada(null); });
+  document.getElementById('btnCancelarAcumulada').addEventListener('click', cerrarModalAcumulada);
+  modalAcumulada.addEventListener('click', function(e){ if(e.target===modalAcumulada) cerrarModalAcumulada(); });
+
+  document.getElementById('btnGuardarAcumulada').addEventListener('click', function(){
+    if(!baseElegidaAcumulada){ mostrarToast('Elige primero la causa base.', 'error'); return; }
+    var rol = document.getElementById('acumRol').value.trim();
+    var anio = document.getElementById('acumAnio').value.trim();
+    var materia = document.getElementById('acumMateria').value.trim();
+    if(!rol || !anio || !materia){ mostrarToast('ROL, AÑO y MATERIA son obligatorios.', 'error'); return; }
+    var btn = this; btn.disabled = true; btn.textContent = 'Guardando...';
+    llamarServicio({accion:'agregarAcumulada', datos:{
+      rol:rol, anio:anio, materia:materia,
+      causaBaseId: baseElegidaAcumulada.idFila, causaBaseRol: baseElegidaAcumulada.rol, causaBaseAnio: baseElegidaAcumulada.anio
+    }}).then(function(){
+      return llamarServicio({accion:'listar'});
+    }).then(function(datos){
+      estado.causas = datos.causas;
+      refrescarVistasDerivadas();
+      mostrarToast('Causa acumulada agregada.', 'exito');
+      cerrarModalAcumulada();
+    }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Agregar'; });
   });
 
   /* ================= STAGING (selección compartida Ranking + Stock) ================= */
