@@ -1514,15 +1514,43 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     return db.collection('config').doc('niveles').set({ niveles: niveles }).then(function(){ return { ok:true }; });
   }
 
+  /** IDs de las causas acumuladas a una causa base dada (se lee del estado ya
+   *  cargado en memoria, la misma fuente que usa la UI para mostrar "N acum."). */
+  function idsAcumuladasDe(idFila){
+    return estado.causas.filter(function(c){ return c.acumulada && String(c.causaBaseId)===String(idFila); })
+      .map(function(c){ return c.idFila; });
+  }
+
+  /** Al pasar una causa BASE a "En Tabla", arrastra con ella a todas sus causas
+   *  acumuladas — se resuelven en el mismo trámite, así que deben quedar igual. */
+  function conArrastreDeAcumuladas(idsFila){
+    var todos = idsFila.slice();
+    idsFila.forEach(function(id){ todos = todos.concat(idsAcumuladasDe(id)); });
+    var vistos = {};
+    return todos.filter(function(id){ if(vistos[id]) return false; vistos[id]=true; return true; });
+  }
+
   function accionConfirmarTabla(idsFila){
-    return ejecutarEnLotes(idsFila, function(batch, lote){
+    var conArrastre = conArrastreDeAcumuladas(idsFila);
+    return ejecutarEnLotes(conArrastre, function(batch, lote){
       lote.forEach(function(idFila){ batch.update(db.collection('causas').doc(String(idFila)), {estado:'En Tabla'}); });
-    }).then(function(){ return { ok:true, actualizadas: idsFila.length }; });
+    }).then(function(){ return { ok:true, actualizadas: idsFila.length, arrastradas: conArrastre.length-idsFila.length }; });
   }
 
   function accionActualizarCausa(idFila, cambios){
     if(!idFila) return Promise.reject(new Error('idFila inválido.'));
-    return db.collection('causas').doc(String(idFila)).update(cambios).then(function(){ return { ok:true }; });
+    var promesa = db.collection('causas').doc(String(idFila)).update(cambios);
+    if(cambios && cambios.estado === 'En Tabla'){
+      var hijos = idsAcumuladasDe(idFila);
+      if(hijos.length){
+        promesa = promesa.then(function(){
+          return ejecutarEnLotes(hijos, function(batch, lote){
+            lote.forEach(function(id){ batch.update(db.collection('causas').doc(String(id)), {estado:'En Tabla'}); });
+          });
+        });
+      }
+    }
+    return promesa.then(function(){ return { ok:true }; });
   }
 
   function accionEliminarFila(idFila){
@@ -3149,7 +3177,9 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(!ok) return;
       btnOrigen.disabled = true; btnOrigen.textContent = 'Guardando...';
       llamarServicio({accion:'confirmarTabla', idsFila: ids}).then(function(datos){
-        mostrarToast('Actualizadas '+datos.actualizadas+' causa(s) a estado "En Tabla".', 'exito');
+        var msj = 'Actualizadas '+datos.actualizadas+' causa(s) a estado "En Tabla".';
+        if(datos.arrastradas) msj += ' (+'+datos.arrastradas+' acumulada(s) arrastrada(s) junto a su causa base).';
+        mostrarToast(msj, 'exito');
         estado.seleccionStaging = {};
         renderBarraStaging();
         return llamarServicio({accion:'listar'});
