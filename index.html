@@ -196,29 +196,48 @@ input.buscador{min-width:220px;flex:1;width:100%;}
 .informe-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--e3);
   flex-wrap:wrap;margin-bottom:var(--e4);}
 .informe-hoja{max-width:760px;margin:0 auto;}
-.informe-portada{text-align:center;padding:0 0 var(--e4);border-bottom:2px solid var(--azul-profundo);margin-bottom:var(--e4);}
-.informe-marca{color:var(--informe-teal);font-size:11px;font-weight:800;letter-spacing:.2em;margin:0 0 12px;}
-.informe-titulo{color:var(--azul-profundo);font-size:25px;font-weight:800;margin:0 0 10px;letter-spacing:-.01em;}
-.informe-meta{color:var(--texto-suave);font-size:12.5px;margin:0;}
+.informe-portada{text-align:center;padding:0 0 var(--e4);margin:0 0 var(--e4) 0;position:relative;}
+.informe-portada::before{content:'';display:block;height:5px;margin:0 0 var(--e4);border-radius:3px;
+  background:linear-gradient(90deg, var(--azul-profundo), var(--informe-teal));}
+.informe-marca-fila{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 12px;}
+.informe-marca{color:var(--informe-teal);font-size:11px;font-weight:800;letter-spacing:.2em;margin:0;}
+.informe-badge-tipo{display:inline-block;background:var(--azul-claro);color:var(--azul-profundo);
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;border-radius:999px;}
+.informe-titulo{color:var(--azul-profundo);font-size:26px;font-weight:800;margin:0 0 8px;letter-spacing:-.01em;}
+.informe-institucion{color:var(--texto);font-size:13.5px;font-weight:600;margin:0 0 6px;}
+.informe-meta{color:var(--texto-suave);font-size:12.5px;margin:0 0 var(--e4);padding-bottom:var(--e4);
+  border-bottom:2px solid var(--azul-profundo);}
 .informe-meta b{color:var(--texto);font-weight:600;}
-.informe-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--borde);
-  border:1px solid var(--borde);border-radius:8px;overflow:hidden;margin-bottom:var(--e4);}
-.informe-kpi{background:var(--superficie);padding:var(--e3) var(--e2);text-align:center;}
-.informe-kpi .num{font-size:26px;font-weight:800;color:var(--azul-profundo);font-variant-numeric:tabular-nums;line-height:1.1;}
+.informe-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:var(--e4);}
+.informe-kpi{background:var(--superficie);border:1px solid var(--borde);border-top:3px solid var(--azul-profundo);
+  border-radius:8px;padding:var(--e3) var(--e2);text-align:center;box-shadow:0 1px 3px rgba(15,42,74,.06);}
+.informe-kpi .num{font-size:27px;font-weight:800;color:var(--azul-profundo);font-variant-numeric:tabular-nums;line-height:1.1;}
+.informe-kpi.acento-a{border-top-color:var(--informe-teal);}
 .informe-kpi.acento-a .num{color:var(--informe-teal);}
 .informe-kpi .lbl{font-size:10.5px;color:var(--texto-suave);text-transform:uppercase;letter-spacing:.05em;margin-top:5px;}
 .informe-resumen-texto{border-left:3px solid var(--azul-profundo);background:var(--fondo);
-  padding:var(--e3) var(--e4);font-size:13.5px;line-height:1.65;margin-bottom:var(--e5);color:var(--texto);}
+  padding:var(--e3) var(--e4);font-size:13.5px;line-height:1.65;margin-bottom:var(--e4);color:var(--texto);
+  border-radius:0 8px 8px 0;}
 .informe-resumen-texto p{margin:0;}
 .informe-seccion-titulo{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
   color:var(--azul-profundo);margin:0 0 var(--e3);padding-bottom:8px;border-bottom:1px solid var(--borde);}
+.informe-hallazgos{background:linear-gradient(135deg, rgba(29,138,158,.06), rgba(15,42,74,.04));
+  border:1px solid var(--borde);border-radius:10px;padding:var(--e4);margin-bottom:var(--e5);}
+.informe-seccion-titulo-hallazgos{border-bottom-color:rgba(15,42,74,.18);}
+.informe-hallazgos ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;}
+.informe-hallazgos li{position:relative;padding-left:26px;font-size:13px;line-height:1.55;color:var(--texto);}
+.informe-hallazgos li::before{content:'✓';position:absolute;left:0;top:0;width:18px;height:18px;
+  border-radius:50%;background:var(--informe-teal);color:#fff;font-size:11px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;}
+.informe-hallazgos li b{color:var(--azul-profundo);}
 .informe-chart-cont{position:relative;margin-bottom:var(--e5);}
 table.tabla-informe{font-size:13px;}
 table.tabla-informe td, table.tabla-informe th{text-align:right;padding:9px 10px;}
 table.tabla-informe td:first-child, table.tabla-informe th:first-child{text-align:left;}
-table.tabla-informe thead th{background:var(--fondo);color:var(--texto-suave);font-size:10.5px;
-  text-transform:uppercase;letter-spacing:.04em;font-weight:700;border-bottom:2px solid var(--azul-profundo);}
+table.tabla-informe thead th{background:var(--azul-profundo);color:#fff;font-size:10.5px;
+  text-transform:uppercase;letter-spacing:.04em;font-weight:700;border-bottom:none;}
 table.tabla-informe td{font-variant-numeric:tabular-nums;}
+table.tabla-informe tbody tr.fila-resumen-libro:nth-child(even){background:var(--fondo);}
 .celda-barra-pct{position:relative;}
 .barra-pct-fondo{position:absolute;inset:5px 10px;border-radius:3px;background:var(--azul-claro);z-index:0;}
 .barra-pct-relleno{position:absolute;top:5px;bottom:5px;left:10px;border-radius:3px;background:var(--azul-profundo);z-index:1;}
@@ -226,11 +245,14 @@ table.tabla-informe td{font-variant-numeric:tabular-nums;}
 tr.fila-resumen-libro td{border-bottom:1px solid var(--borde);}
 tr.fila-total-general td{background:var(--azul-profundo);color:#fff;font-weight:800;font-size:13.5px;border-bottom:none;}
 .tabla-detalle-anio{font-size:11.5px;color:var(--texto-suave);}
-.tabla-detalle-anio thead th{background:transparent;color:var(--texto-suave);font-size:10px;border-bottom:1px solid var(--borde);}
+.tabla-detalle-anio thead th{background:var(--fondo)!important;color:var(--texto-suave);font-size:10px;
+  border-bottom:1px solid var(--borde);}
 .tabla-detalle-anio td{padding:5px 10px;color:var(--texto-suave);}
 tr.fila-total-libro td{background:var(--fondo);font-weight:700;color:var(--azul-profundo);border-top:1px solid var(--borde);border-bottom:2px solid var(--borde);}
 .informe-pie{text-align:center;color:var(--texto-suave);font-size:10.5px;margin-top:var(--e5);
   padding-top:var(--e3);border-top:1px solid var(--borde);}
+.informe-pie p{margin:0 0 3px;}
+.informe-pie p:last-child{margin-bottom:0;}
 .lista-historial{display:flex;flex-direction:column;gap:8px;margin-top:var(--e3);}
 .item-historial{display:flex;align-items:flex-start;gap:14px;padding:10px 14px;background:var(--fondo);
   border:1px solid var(--borde);border-radius:10px;}
@@ -246,17 +268,21 @@ tr.fila-total-libro td{background:var(--fondo);font-weight:700;color:var(--azul-
   /* cada bloque empieza en una página limpia — evita que el gráfico o una
      tabla queden cortados a la mitad con un salto de página a medio camino */
   .informe-bloque-pagina{break-before:page;page-break-before:always;}
-  .informe-chart-cont, #tablaInformeResumen, .informe-kpis{break-inside:avoid;page-break-inside:avoid;}
+  .informe-chart-cont, #tablaInformeResumen, .informe-kpis, .informe-hallazgos{break-inside:avoid;page-break-inside:avoid;}
   #tablaInformeDetalle thead{display:table-header-group;} /* repite el encabezado si la tabla larga cruza de página */
   tr{break-inside:avoid;page-break-inside:avoid;}
-  .informe-titulo{color:#000;}
-  .informe-resumen-texto{background:#f4f4f4;border-left-color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .informe-kpi .num{color:#000;}
-  table.tabla-informe thead th{background:#eee!important;border-bottom-color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  tr.fila-total-general td{background:#000!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  tr.fila-total-libro td{background:#f2f2f2!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .barra-pct-relleno{background:#0F2A4A!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .barra-pct-fondo{background:#e6e6e6!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  * {-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}
+  .informe-portada::before{background:linear-gradient(90deg, var(--azul-profundo), var(--informe-teal));}
+  .informe-badge-tipo{background:var(--azul-claro);color:var(--azul-profundo);}
+  .informe-resumen-texto{background:#f4f4f4;border-left-color:var(--azul-profundo);}
+  .informe-hallazgos{background:#f7f9fb;border-color:#d8e0ea;}
+  .informe-kpi{box-shadow:none;}
+  table.tabla-informe thead th{background:var(--azul-profundo)!important;color:#fff!important;}
+  table.tabla-informe tbody tr.fila-resumen-libro:nth-child(even){background:#f4f6f9!important;}
+  tr.fila-total-general td{background:var(--azul-profundo)!important;color:#fff!important;}
+  tr.fila-total-libro td{background:#f2f2f2!important;}
+  .barra-pct-relleno{background:var(--azul-profundo)!important;}
+  .barra-pct-fondo{background:#e6e6e6!important;}
 }
 
 /* -------- tabla -------- */
@@ -912,14 +938,23 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
         <div class="zona-imprimible" id="areaImprimibleInforme">
           <div class="informe-hoja">
             <div class="informe-portada">
-              <p class="informe-marca">PRIORIZA PJUD</p>
+              <div class="informe-marca-fila">
+                <p class="informe-marca">PRIORIZA PJUD</p>
+                <span class="informe-badge-tipo">Informe mensual</span>
+              </div>
               <h1 class="informe-titulo">Stock de Causas en Relación para Tabla</h1>
+              <p class="informe-institucion">Unidad de Causas y Salas · Iltma. Corte de Apelaciones de La Serena</p>
               <p class="informe-meta" id="informeFecha"></p>
             </div>
 
             <div class="informe-kpis" id="informeKpis"></div>
 
             <div class="informe-resumen-texto" id="informeResumenTexto"></div>
+
+            <div class="informe-hallazgos">
+              <p class="informe-seccion-titulo informe-seccion-titulo-hallazgos">Hallazgos clave — resumen de utilidad</p>
+              <ul id="informeListaHallazgos"></ul>
+            </div>
 
             <div class="informe-bloque-pagina">
               <p class="informe-seccion-titulo">Causas en relación por libro</p>
@@ -943,7 +978,10 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
                 </table>
               </div>
 
-              <p class="informe-pie">Unidad de Causas y Salas · Iltma. Corte de Apelaciones de La Serena — Generado automáticamente por Prioriza PJUD el <span id="informeFechaPie"></span>.</p>
+              <div class="informe-pie">
+                <p>Documento de uso interno · Generado automáticamente por <b>Prioriza PJUD</b> el <span id="informeFechaPie"></span>.</p>
+                <p>Unidad de Causas y Salas · Iltma. Corte de Apelaciones de La Serena</p>
+              </div>
             </div>
           </div>
         </div>
@@ -2533,10 +2571,60 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       : '<p>No hay causas en estado "Disponible" en este momento.</p>';
 
     document.getElementById('informeFecha').textContent =
-      'Al '+new Date().toLocaleDateString('es-CL', { day:'2-digit', month:'long', year:'numeric' })+' · Unidad de Causas y Salas · Iltma. Corte de Apelaciones de La Serena';
-    document.getElementById('informeFechaPie').textContent = new Date().toLocaleString('es-CL');
+      'Al '+new Date().toLocaleDateString('es-CL', { day:'2-digit', month:'long', year:'numeric' });
+    document.getElementById('informeFechaPie').textContent = new Date().toLocaleString('es-CL', { hour12:false });
+
+    /* -------- hallazgos clave (resumen de utilidad para jefatura) -------- */
+    var hallazgos = calcularHallazgosInforme(causas, librosPorTotal, totalPorLibro, granTotal, granD, granA);
+    document.getElementById('informeListaHallazgos').innerHTML = hallazgos.length
+      ? hallazgos.map(function(h){ return '<li>'+h+'</li>'; }).join('')
+      : '<li>No hay causas "Disponible" para generar hallazgos.</li>';
 
     dibujarGraficoInforme(librosPorTotal, dPorLibro, aPorLibro);
+  }
+
+  /** Puntos clave en lenguaje natural, calculados de los mismos datos del informe —
+   *  el "resumen de utilidad" que evita tener que interpretar tabla y gráfico a mano. */
+  function calcularHallazgosInforme(causas, librosPorTotal, totalPorLibro, granTotal, granD, granA){
+    if(!granTotal) return [];
+    var hallazgos = [];
+
+    var l1 = librosPorTotal[0];
+    var p1 = Math.round(totalPorLibro[l1]/granTotal*100);
+    var texto1 = 'El libro <b>'+l1+'</b> concentra la mayor carga, con '+totalPorLibro[l1]+' causas ('+p1+'% del total)';
+    if(librosPorTotal.length>1){
+      var l2 = librosPorTotal[1], p2 = Math.round(totalPorLibro[l2]/granTotal*100);
+      texto1 += ', seguido de <b>'+l2+'</b> con '+totalPorLibro[l2]+' ('+p2+'%)';
+    }
+    hallazgos.push(texto1+'.');
+
+    var pctD = Math.round(granD/granTotal*100), pctA = 100-pctD;
+    hallazgos.push('Del total en relación, <b>'+pctD+'%</b> corresponde a causas Definitivas (D) y <b>'+pctA+'%</b> a Artículos (A).');
+
+    var conRija = causas.filter(function(c){ return c.rija; }).length;
+    if(conRija>0){
+      var pctRija = Math.round(conRija/granTotal*100);
+      var pctRijaTexto = (pctRija===0 ? '<1' : pctRija)+'%';
+      hallazgos.push('<b>'+conRija+' causa(s)</b> cuentan con marca RIJA y deben priorizarse en el Índice de Prioridad ('+pctRijaTexto+' del stock disponible).');
+    }
+
+    var fechas = causas.map(function(c){ return parsearFechaLocal(c.fechaRelacion); }).filter(Boolean);
+    if(fechas.length){
+      var hoy = new Date();
+      var msEnMes = 2592000000; // 30 días
+      var masAntigua = fechas.reduce(function(a,b){ return a<b?a:b; });
+      var mesesEspera = Math.max(0, Math.round((hoy-masAntigua)/msEnMes));
+      var promedioMeses = Math.round(fechas.reduce(function(s,f){ return s+(hoy-f); },0)/fechas.length/msEnMes);
+      hallazgos.push('La causa más antigua en relación lleva aproximadamente <b>'+mesesEspera+' mes(es)</b> en espera (desde '+masAntigua.toLocaleDateString('es-CL')+'); el tiempo promedio de espera del stock disponible es de <b>'+promedioMeses+' mes(es)</b>.');
+    }
+
+    if(librosPorTotal.length>2){
+      var otros = librosPorTotal.slice(2).reduce(function(s,l){ return s+totalPorLibro[l]; },0);
+      var pctOtros = Math.round(otros/granTotal*100);
+      hallazgos.push('Los '+(librosPorTotal.length-2)+' libro(s) restantes agrupan en conjunto '+otros+' causas ('+pctOtros+'%), con una carga más distribuida.');
+    }
+
+    return hallazgos;
   }
 
   /** Dibuja los totales al final de cada barra directamente sobre el canvas —
