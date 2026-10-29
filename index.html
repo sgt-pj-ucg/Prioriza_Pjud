@@ -195,6 +195,7 @@ input.buscador{min-width:220px;flex:1;width:100%;}
 :root{ --informe-teal:#1D8A9E; }
 .informe-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--e3);
   flex-wrap:wrap;margin-bottom:var(--e4);}
+.informe-hint-pdf{margin:6px 0 0;font-size:11px;color:var(--texto-suave);max-width:220px;}
 .informe-hoja{max-width:760px;margin:0 auto;}
 .informe-portada{text-align:center;padding:0 0 var(--e4);margin:0 0 var(--e4) 0;position:relative;}
 .informe-portada::before{content:'';display:block;height:5px;margin:0 0 var(--e4);border-radius:3px;
@@ -319,6 +320,21 @@ tr.fila-seleccionada td{background:#fff3f7!important;}
   border-radius:999px;padding:4px 13px;font-size:12.5px;font-weight:600;cursor:pointer;}
 .chip-anio:hover{background:var(--azul-claro);}
 .chip-anio.activo{background:var(--azul-profundo);border-color:var(--azul-profundo);color:#fff;}
+.chip-estado, .chip-marca{border:1px solid var(--borde);background:var(--superficie);color:var(--texto);
+  border-radius:999px;padding:5px 13px 5px 10px;font-size:12.5px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:var(--transicion);}
+.chip-estado::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--clr,var(--gris));flex:0 0 auto;}
+.chip-estado:hover, .chip-marca:hover{border-color:var(--clr,var(--azul-medio));background:var(--fondo);}
+.chip-estado.activo, .chip-marca.activo{background:var(--clr,var(--azul-profundo));border-color:var(--clr,var(--azul-profundo));color:#fff;}
+.chip-estado.activo::before{background:#fff;}
+.chip-estado[data-estado="Disponible"]{--clr:var(--verde);}
+.chip-estado[data-estado="En Trámite"]{--clr:var(--ambar);}
+.chip-estado[data-estado="En Tabla"]{--clr:var(--azul-medio);}
+.chip-estado[data-estado="Suspendida Procedimiento"]{--clr:var(--purpura);}
+.chip-estado[data-estado="Desistida"]{--clr:var(--rojo);}
+.chip-marca[data-marca="rija"]{--clr:var(--rojo);}
+.chip-marca[data-marca="acumulada"]{--clr:var(--cian);}
+.chip-marca[data-marca="suspension"]{--clr:var(--purpura);}
 
 /* -------- mini panel: cantidad de causas visibles según filtro activo -------- */
 .fila-contador-stock{margin:2px 0 10px;}
@@ -707,7 +723,7 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
             <input class="buscador" id="buscadorStock" placeholder="Buscar por ROL, AÑO, LIBRO, MATERIA...">
             <button type="button" class="btn-limpiar-buscador" id="btnLimpiarBuscadorStock" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">×</button>
           </div>
-          <select class="filtro" id="filtroEstadoStock">
+          <select class="filtro oculto" id="filtroEstadoStock">
             <option value="">Todos los estados</option>
             <option>Disponible</option><option>En Trámite</option><option>En Tabla</option>
             <option>Suspendida Procedimiento</option><option>Desistida</option>
@@ -734,6 +750,26 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
             <div class="chips-anios chips-tipos" id="chipsTiposStock">
               <button type="button" class="chip-anio" data-tipo="D">D · Definitiva</button>
               <button type="button" class="chip-anio" data-tipo="A">A · Artículo</button>
+            </div>
+          </div>
+          <div class="separador-filtros-rapidos"></div>
+          <div class="grupo-filtro-rapido">
+            <span class="fila-anios-stock-lbl">Estado:</span>
+            <div class="chips-anios" id="chipsEstadoStock">
+              <button type="button" class="chip-estado" data-estado="Disponible">Disponible</button>
+              <button type="button" class="chip-estado" data-estado="En Trámite">En Trámite</button>
+              <button type="button" class="chip-estado" data-estado="En Tabla">En Tabla</button>
+              <button type="button" class="chip-estado" data-estado="Suspendida Procedimiento">Susp. Proced.</button>
+              <button type="button" class="chip-estado" data-estado="Desistida">Desistida</button>
+            </div>
+          </div>
+          <div class="separador-filtros-rapidos"></div>
+          <div class="grupo-filtro-rapido">
+            <span class="fila-anios-stock-lbl">Marcas:</span>
+            <div class="chips-anios" id="chipsMarcasStock">
+              <button type="button" class="chip-marca" data-marca="rija">⚑ RIJA</button>
+              <button type="button" class="chip-marca" data-marca="acumulada">⛓ Acumuladas</button>
+              <button type="button" class="chip-marca" data-marca="suspension">⏸ Suspendidas</button>
             </div>
           </div>
         </div>
@@ -933,7 +969,10 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
             <h2>Informe Mensual — Stock en Relación para Tabla</h2>
             <p class="subt" style="margin:0;">Resumen ejecutivo con los datos actuales, listo para presentar a jefatura. Considera las causas en estado <b>Disponible</b> (en relación, pendientes de ser puestas en tabla).</p>
           </div>
-          <button class="btn btn-secundario" id="btnImprimirInforme"><svg class="icono-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17v4h12v-4"/></svg> Imprimir / PDF</button>
+          <div style="text-align:right;">
+            <button class="btn btn-primario" id="btnImprimirInforme"><svg class="icono-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg> Descargar PDF</button>
+            <p class="informe-hint-pdf">Se abre el diálogo de impresión — elige "Guardar como PDF" como destino.</p>
+          </div>
         </div>
         <div class="zona-imprimible" id="areaImprimibleInforme">
           <div class="informe-hoja">
@@ -2601,7 +2640,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var pctD = Math.round(granD/granTotal*100), pctA = 100-pctD;
     hallazgos.push('Del total en relación, <b>'+pctD+'%</b> corresponde a causas Definitivas (D) y <b>'+pctA+'%</b> a Artículos (A).');
 
-    var conRija = causas.filter(function(c){ return c.rija; }).length;
+    var conRija = causas.filter(function(c){ return String(c.rija||'').toUpperCase().indexOf('RIJA')>-1; }).length;
     if(conRija>0){
       var pctRija = Math.round(conRija/granTotal*100);
       var pctRijaTexto = (pctRija===0 ? '<1' : pctRija)+'%';
@@ -2751,6 +2790,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   }
 
   var filtroTipoStock = '';
+  var filtroRijaStock = false;
+  var filtroAcumuladaStock = false;
 
   function causasFiltradas(){
     var texto = (document.getElementById('buscadorStock').value||'').toLowerCase();
@@ -2761,6 +2802,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     return estado.causas.filter(function(c){
       if(filtroEstado && c.estado!==filtroEstado) return false;
       if(filtroTipoStock && String(c.tipo||'').trim().toUpperCase()!==filtroTipoStock) return false;
+      if(filtroRijaStock && String(c.rija||'').toUpperCase().indexOf('RIJA')<0) return false;
+      if(filtroAcumuladaStock && !c.acumulada) return false;
       if(filtroLibro && String(c.libro||'').trim()!==filtroLibro) return false;
       if(relacionDesde || relacionHasta){
         var mesAnio = mesAnioDeFecha(c.fechaRelacion);
@@ -2831,6 +2874,61 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     });
   })();
 
+  /** Único punto de entrada para fijar/limpiar el filtro de ESTADO — lo usan tanto
+   *  los chips de "Estado:" como el chip "Suspendidas" del grupo "Marcas:" (son el
+   *  mismo filtro subyacente, solo accesible desde dos lugares distintos). */
+  function toggleEstadoStock(valor){
+    var select = document.getElementById('filtroEstadoStock');
+    select.value = (select.value===valor) ? '' : valor;
+    renderStock();
+  }
+
+  function renderChipsEstadoStock(){
+    var cont = document.getElementById('chipsEstadoStock');
+    if(!cont) return;
+    var actual = document.getElementById('filtroEstadoStock').value;
+    cont.querySelectorAll('.chip-estado').forEach(function(btn){
+      btn.classList.toggle('activo', btn.dataset.estado===actual);
+    });
+  }
+
+  (function(){
+    var cont = document.getElementById('chipsEstadoStock');
+    if(!cont) return;
+    cont.querySelectorAll('.chip-estado').forEach(function(btn){
+      btn.addEventListener('click', function(){ toggleEstadoStock(btn.dataset.estado); });
+    });
+  })();
+
+  /** Chips de "Marcas": RIJA y Acumuladas tienen su propio filtro independiente;
+   *  Suspendidas es un atajo que simplemente activa el mismo filtro de ESTADO
+   *  que su chip equivalente, para que ambos queden siempre sincronizados. */
+  function renderChipsMarcasStock(){
+    var cont = document.getElementById('chipsMarcasStock');
+    if(!cont) return;
+    var estadoActual = document.getElementById('filtroEstadoStock').value;
+    cont.querySelectorAll('.chip-marca').forEach(function(btn){
+      var marca = btn.dataset.marca;
+      var activo = marca==='rija' ? filtroRijaStock : marca==='acumulada' ? filtroAcumuladaStock
+        : estadoActual==='Suspendida Procedimiento';
+      btn.classList.toggle('activo', activo);
+    });
+  }
+
+  (function(){
+    var cont = document.getElementById('chipsMarcasStock');
+    if(!cont) return;
+    cont.querySelectorAll('.chip-marca').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var marca = btn.dataset.marca;
+        if(marca==='suspension'){ toggleEstadoStock('Suspendida Procedimiento'); return; }
+        if(marca==='rija') filtroRijaStock = !filtroRijaStock;
+        else if(marca==='acumulada') filtroAcumuladaStock = !filtroAcumuladaStock;
+        renderStock();
+      });
+    });
+  })();
+
   var soloDuplicados = false;
 
   var OPCIONES_COMPLEJIDAD = ['', 'Estudio (E)', 'Compleja (A)', 'Mediana complejidad (B)', 'No compleja (C)'];
@@ -2884,6 +2982,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
     renderChipsAniosStock();
     renderChipsTiposStock();
+    renderChipsEstadoStock();
+    renderChipsMarcasStock();
 
     var contador = document.getElementById('contadorStock');
     if(contador){
@@ -3032,6 +3132,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     document.getElementById('filtroRelacionDesde').value='';
     document.getElementById('filtroRelacionHasta').value='';
     filtroTipoStock='';
+    filtroRijaStock=false;
+    filtroAcumuladaStock=false;
     soloDuplicados=false;
     document.getElementById('btnDuplicados').innerHTML = ICONOS.duplicado+' Ver duplicados';
     renderStock();
