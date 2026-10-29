@@ -334,7 +334,7 @@ tr.fila-seleccionada td{background:#fff3f7!important;}
 .chip-estado[data-estado="Desistida"]{--clr:var(--rojo);}
 .chip-marca[data-marca="rija"]{--clr:var(--rojo);}
 .chip-marca[data-marca="acumulada"]{--clr:var(--cian);}
-.chip-marca[data-marca="suspension"]{--clr:var(--purpura);}
+.chip-count{font-weight:700;font-variant-numeric:tabular-nums;}
 
 /* -------- mini panel: cantidad de causas visibles según filtro activo -------- */
 .fila-contador-stock{margin:2px 0 10px;}
@@ -756,20 +756,19 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
           <div class="grupo-filtro-rapido">
             <span class="fila-anios-stock-lbl">Estado:</span>
             <div class="chips-anios" id="chipsEstadoStock">
-              <button type="button" class="chip-estado" data-estado="Disponible">Disponible</button>
-              <button type="button" class="chip-estado" data-estado="En Trámite">En Trámite</button>
-              <button type="button" class="chip-estado" data-estado="En Tabla">En Tabla</button>
-              <button type="button" class="chip-estado" data-estado="Suspendida Procedimiento">Susp. Proced.</button>
-              <button type="button" class="chip-estado" data-estado="Desistida">Desistida</button>
+              <button type="button" class="chip-estado" data-estado="Disponible">Disponible <span class="chip-count"></span></button>
+              <button type="button" class="chip-estado" data-estado="En Trámite">En Trámite <span class="chip-count"></span></button>
+              <button type="button" class="chip-estado" data-estado="En Tabla">En Tabla <span class="chip-count"></span></button>
+              <button type="button" class="chip-estado" data-estado="Suspendida Procedimiento">Susp. Proced. <span class="chip-count"></span></button>
+              <button type="button" class="chip-estado" data-estado="Desistida">Desistida <span class="chip-count"></span></button>
             </div>
           </div>
           <div class="separador-filtros-rapidos"></div>
           <div class="grupo-filtro-rapido">
             <span class="fila-anios-stock-lbl">Marcas:</span>
             <div class="chips-anios" id="chipsMarcasStock">
-              <button type="button" class="chip-marca" data-marca="rija">⚑ RIJA</button>
-              <button type="button" class="chip-marca" data-marca="acumulada">⛓ Acumuladas</button>
-              <button type="button" class="chip-marca" data-marca="suspension">⏸ Suspendidas</button>
+              <button type="button" class="chip-marca" data-marca="rija">⚑ RIJA <span class="chip-count"></span></button>
+              <button type="button" class="chip-marca" data-marca="acumulada">⛓ Acumuladas <span class="chip-count"></span></button>
             </div>
           </div>
         </div>
@@ -2793,17 +2792,20 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   var filtroRijaStock = false;
   var filtroAcumuladaStock = false;
 
-  function causasFiltradas(){
+  /** `omitir` deja de aplicar UN filtro puntual ('estado'|'rija'|'acumulada') — lo usan
+   *  los contadores de los chips para mostrar cuántas causas quedarían con ESE chip
+   *  activado, respetando los demás filtros ya puestos (igual que un buscador con facetas). */
+  function causasFiltradas(omitir){
     var texto = (document.getElementById('buscadorStock').value||'').toLowerCase();
     var filtroEstado = document.getElementById('filtroEstadoStock').value;
     var filtroLibro = document.getElementById('filtroLibroStock').value;
     var relacionDesde = document.getElementById('filtroRelacionDesde').value;
     var relacionHasta = document.getElementById('filtroRelacionHasta').value;
     return estado.causas.filter(function(c){
-      if(filtroEstado && c.estado!==filtroEstado) return false;
+      if(omitir!=='estado' && filtroEstado && c.estado!==filtroEstado) return false;
       if(filtroTipoStock && String(c.tipo||'').trim().toUpperCase()!==filtroTipoStock) return false;
-      if(filtroRijaStock && String(c.rija||'').toUpperCase().indexOf('RIJA')<0) return false;
-      if(filtroAcumuladaStock && !c.acumulada) return false;
+      if(omitir!=='rija' && filtroRijaStock && String(c.rija||'').toUpperCase().indexOf('RIJA')<0) return false;
+      if(omitir!=='acumulada' && filtroAcumuladaStock && !c.acumulada) return false;
       if(filtroLibro && String(c.libro||'').trim()!==filtroLibro) return false;
       if(relacionDesde || relacionHasta){
         var mesAnio = mesAnioDeFecha(c.fechaRelacion);
@@ -2883,12 +2885,19 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     renderStock();
   }
 
+  /** Pinta cada chip de ESTADO con la cantidad de causas que tendría SI se activara
+   *  (respetando los demás filtros ya puestos — búsqueda, libro, año, tipo, marcas). */
   function renderChipsEstadoStock(){
     var cont = document.getElementById('chipsEstadoStock');
     if(!cont) return;
     var actual = document.getElementById('filtroEstadoStock').value;
+    var base = causasFiltradas('estado');
+    var conteos = {};
+    base.forEach(function(c){ var e = c.estado||''; conteos[e] = (conteos[e]||0)+1; });
     cont.querySelectorAll('.chip-estado').forEach(function(btn){
       btn.classList.toggle('activo', btn.dataset.estado===actual);
+      var span = btn.querySelector('.chip-count');
+      if(span) span.textContent = conteos[btn.dataset.estado]||0;
     });
   }
 
@@ -2900,18 +2909,19 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     });
   })();
 
-  /** Chips de "Marcas": RIJA y Acumuladas tienen su propio filtro independiente;
-   *  Suspendidas es un atajo que simplemente activa el mismo filtro de ESTADO
-   *  que su chip equivalente, para que ambos queden siempre sincronizados. */
+  /** Chips de "Marcas": RIJA y Acumuladas, cada una con su propio filtro independiente
+   *  y su contador (cuántas causas quedarían con ese filtro, sobre el resto de filtros). */
   function renderChipsMarcasStock(){
     var cont = document.getElementById('chipsMarcasStock');
     if(!cont) return;
-    var estadoActual = document.getElementById('filtroEstadoStock').value;
+    var conRija = causasFiltradas('rija').filter(function(c){ return String(c.rija||'').toUpperCase().indexOf('RIJA')>-1; }).length;
+    var conAcum = causasFiltradas('acumulada').filter(function(c){ return c.acumulada; }).length;
     cont.querySelectorAll('.chip-marca').forEach(function(btn){
       var marca = btn.dataset.marca;
-      var activo = marca==='rija' ? filtroRijaStock : marca==='acumulada' ? filtroAcumuladaStock
-        : estadoActual==='Suspendida Procedimiento';
+      var activo = marca==='rija' ? filtroRijaStock : filtroAcumuladaStock;
       btn.classList.toggle('activo', activo);
+      var span = btn.querySelector('.chip-count');
+      if(span) span.textContent = marca==='rija' ? conRija : conAcum;
     });
   }
 
@@ -2921,7 +2931,6 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     cont.querySelectorAll('.chip-marca').forEach(function(btn){
       btn.addEventListener('click', function(){
         var marca = btn.dataset.marca;
-        if(marca==='suspension'){ toggleEstadoStock('Suspendida Procedimiento'); return; }
         if(marca==='rija') filtroRijaStock = !filtroRijaStock;
         else if(marca==='acumulada') filtroAcumuladaStock = !filtroAcumuladaStock;
         renderStock();
