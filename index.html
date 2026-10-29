@@ -231,6 +231,14 @@ tr.fila-total-general td{background:var(--azul-profundo);color:#fff;font-weight:
 tr.fila-total-libro td{background:var(--fondo);font-weight:700;color:var(--azul-profundo);border-top:1px solid var(--borde);border-bottom:2px solid var(--borde);}
 .informe-pie{text-align:center;color:var(--texto-suave);font-size:10.5px;margin-top:var(--e5);
   padding-top:var(--e3);border-top:1px solid var(--borde);}
+.lista-historial{display:flex;flex-direction:column;gap:8px;margin-top:var(--e3);}
+.item-historial{display:flex;align-items:flex-start;gap:14px;padding:10px 14px;background:var(--fondo);
+  border:1px solid var(--borde);border-radius:10px;}
+.item-historial .rol-anio-historial{flex:0 0 auto;min-width:140px;font-weight:700;color:var(--azul-profundo);font-size:12.5px;}
+.item-historial .libro-historial{display:block;font-weight:400;color:var(--texto-suave);font-size:11px;}
+.item-historial .desc-historial{flex:1 1 auto;font-size:13px;color:var(--texto);}
+.item-historial .fecha-historial{flex:0 0 auto;color:var(--texto-suave);font-size:11.5px;white-space:nowrap;}
+.lista-historial .vacio{text-align:center;color:var(--texto-suave);padding:30px 0;}
 @media print{
   @page{ size: portrait; margin: 14mm; }
   .informe-header{display:none;}
@@ -299,7 +307,6 @@ table.datos#tablaStock th{white-space:normal;line-height:1.2;vertical-align:bott
 .tabla-stock-ajustada .celda-materia{max-width:none;}
 .tabla-stock-ajustada .celda-libro{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help;}
 .tabla-stock-ajustada .celda-suspension{white-space:nowrap;}
-.tabla-stock-ajustada .celda-actualizado{white-space:nowrap;color:var(--texto-suave);font-size:11px;}
 .tabla-stock-ajustada .celda-reanudar{white-space:normal;line-height:1.25;}
 .tabla-stock-ajustada .sel-complejidad{max-width:100%;width:100%;padding:4px 4px;font-size:11px;}
 .tabla-stock-ajustada .sel-estado{max-width:100%;width:100%;padding:4px 6px;font-size:10.5px;}
@@ -607,6 +614,7 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
     <button data-vista="config"><span class="badge">6</span> Configuración Prioridad</button>
     <button data-vista="ingesta"><span class="badge">7</span> Ingresos</button>
     <button data-vista="informe"><span class="badge">8</span> Informe Mensual</button>
+    <button data-vista="historial"><span class="badge">9</span> Última actualización</button>
   </nav>
 
   <main>
@@ -702,13 +710,6 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
               <button type="button" class="chip-anio" data-tipo="A">A · Artículo</button>
             </div>
           </div>
-          <div class="separador-filtros-rapidos"></div>
-          <div class="grupo-filtro-rapido">
-            <span class="fila-anios-stock-lbl">Seguimiento:</span>
-            <div class="chips-anios">
-              <button type="button" class="chip-anio" id="chipActualizadasHoy" title="Causas cuyo estado, RIJA, complejidad u otro dato cambió hoy">Actualizadas hoy</button>
-            </div>
-          </div>
         </div>
         <div class="fila-contador-stock">
           <span class="contador-stock" id="contadorStock">0 causa(s)</span>
@@ -719,11 +720,11 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
               <col style="width:34px"><col style="width:52px"><col style="width:52px"><col style="width:170px">
               <col style="width:239px"><col style="width:50px"><col style="width:145px">
               <col style="width:140px"><col style="width:48px"><col style="width:92px"><col style="width:150px"><col style="width:115px">
-              <col style="width:100px"><col style="width:100px"><col style="width:120px"><col style="width:80px">
+              <col style="width:100px"><col style="width:100px"><col style="width:80px">
             </colgroup>
             <thead><tr><th></th><th>ROL</th><th>AÑO</th><th>LIBRO</th><th>MATERIA</th><th>TIPO</th><th>COMPLEJIDAD</th>
               <th>ESTADO</th><th>RIJA</th><th>ACUM.</th><th>SUSPENSIÓN</th><th>DÍAS PARA REANUDAR</th>
-              <th>FECHA INGRESO</th><th>FECHA RELACIÓN</th><th>ÚLTIMA ACTUALIZACIÓN</th><th class="col-acciones"></th></tr></thead>
+              <th>FECHA INGRESO</th><th>FECHA RELACIÓN</th><th class="col-acciones"></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -945,6 +946,25 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
               <p class="informe-pie">Unidad de Causas y Salas · Iltma. Corte de Apelaciones de La Serena — Generado automáticamente por Prioriza PJUD el <span id="informeFechaPie"></span>.</p>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="vista-historial" class="oculto">
+      <div class="tarjeta">
+        <div class="informe-header no-imprimir">
+          <div>
+            <h2>Última actualización — Registro de cambios</h2>
+            <p class="subt" style="margin:0;">Historial cronológico de los cambios realizados a las causas (estado, RIJA, complejidad, suspensión, acumulación, traspaso a tabla). La modificación más reciente siempre queda arriba.</p>
+          </div>
+          <button class="btn btn-secundario" id="btnRecargarHistorial">Actualizar</button>
+        </div>
+        <div class="fila-contador-stock">
+          <span class="contador-stock" id="contadorHistorial">0 registro(s)</span>
+        </div>
+        <div class="lista-historial" id="listaHistorial"></div>
+        <div style="text-align:center;margin-top:16px;">
+          <button class="btn btn-secundario oculto" id="btnCargarMasHistorial">Cargar más</button>
         </div>
       </div>
     </section>
@@ -1540,29 +1560,103 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     return todos.filter(function(id){ if(vistos[id]) return false; vistos[id]=true; return true; });
   }
 
+  /** Registro de auditoría: guarda un evento individual en la colección "historial"
+   *  (no solo un sello de "última vez"), para poder ver qué cambió exactamente y cuándo. */
+  function registrarHistorial(causa, descripcion){
+    if(!causa || !descripcion) return Promise.resolve();
+    return db.collection('historial').add({
+      causaId: String(causa.idFila||''),
+      rol: causa.rol||'',
+      anio: causa.anio||'',
+      libro: causa.libro||'',
+      descripcion: descripcion,
+      fecha: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(function(e){ console.error('No se pudo registrar historial:', e); });
+  }
+
+  /** Construye una descripción legible de qué cambió, comparando los valores anteriores
+   *  (leídos de estado.causas en memoria) contra los nuevos valores enviados. */
+  function descripcionCambios(antes, cambios){
+    antes = antes || {};
+    var partes = [];
+    Object.keys(cambios||{}).forEach(function(campo){
+      var nuevo = cambios[campo];
+      switch(campo){
+        case 'estado':
+          partes.push('Estado: '+(antes.estado||'—')+' → '+nuevo);
+          break;
+        case 'rija':
+          partes.push(nuevo ? 'RIJA marcada' : 'RIJA desmarcada');
+          break;
+        case 'complejidad':
+          partes.push('Complejidad: '+(antes.complejidad||'—')+' → '+(nuevo||'—'));
+          break;
+        case 'fechaSuspension':
+          partes.push('Suspensión: hasta '+(nuevo||'—')+(cambios.diasSuspension!=null?' ('+cambios.diasSuspension+' días)':''));
+          break;
+        case 'diasSuspension':
+          if(cambios.fechaSuspension===undefined) partes.push('Días para reanudar: '+nuevo);
+          break;
+        case 'acumulada':
+          partes.push(nuevo ? 'Acumulada a causa base '+(cambios.causaBaseRol||'?')+'-'+(cambios.causaBaseAnio||'?') : 'Desacumulada');
+          break;
+        case 'materia':
+          partes.push('Materia: '+(antes.materia||'—')+' → '+(nuevo||'—'));
+          break;
+        case 'tipo':
+          partes.push('Tipo: '+(antes.tipo||'—')+' → '+(nuevo||'—'));
+          break;
+        case 'observacion': case 'comentarios':
+          partes.push('Observación actualizada');
+          break;
+        case 'causaBaseId': case 'causaBaseRol': case 'causaBaseAnio': case 'actualizadoEn':
+          break;
+        default:
+          partes.push(campo+' actualizado');
+      }
+    });
+    return partes.length ? partes.join('; ') : 'Datos actualizados';
+  }
+
   function accionConfirmarTabla(idsFila){
     var conArrastre = conArrastreDeAcumuladas(idsFila);
     var ahora = firebase.firestore.FieldValue.serverTimestamp();
+    var directas = {};
+    idsFila.forEach(function(id){ directas[id] = true; });
     return ejecutarEnLotes(conArrastre, function(batch, lote){
       lote.forEach(function(idFila){ batch.update(db.collection('causas').doc(String(idFila)), {estado:'En Tabla', actualizadoEn: ahora}); });
+    }).then(function(){
+      return Promise.all(conArrastre.map(function(id){
+        var antes = estado.causas.find(function(c){ return String(c.idFila)===String(id); });
+        var desc = directas[id] ? 'Pasó a Tabla (Traspaso SITCORTE)' : 'Pasó a Tabla (arrastrada por acumulación)';
+        return registrarHistorial(antes || {idFila:id}, desc);
+      }));
     }).then(function(){ return { ok:true, actualizadas: idsFila.length, arrastradas: conArrastre.length-idsFila.length }; });
   }
 
   /** Cualquier cambio sobre una causa (estado, RIJA, complejidad, acumular/desacumular,
-   *  edición manual) queda con sello de hora — es el registro de auditoría: permite ver
-   *  qué causas se tocaron y cuándo, aunque no haya login individual por funcionario. */
+   *  edición manual) queda con sello de hora y además genera un evento en el historial
+   *  (vista "9 — Última actualización"), describiendo específicamente qué se cambió. */
   function accionActualizarCausa(idFila, cambios){
     if(!idFila) return Promise.reject(new Error('idFila inválido.'));
+    var antes = estado.causas.find(function(c){ return String(c.idFila)===String(idFila); });
     var cambiosConSello = Object.assign({}, cambios, { actualizadoEn: firebase.firestore.FieldValue.serverTimestamp() });
-    var promesa = db.collection('causas').doc(String(idFila)).update(cambiosConSello);
+    var promesa = db.collection('causas').doc(String(idFila)).update(cambiosConSello)
+      .then(function(){ return registrarHistorial(antes || {idFila:idFila}, descripcionCambios(antes, cambios)); });
     if(cambios && cambios.estado === 'En Tabla'){
       var hijos = idsAcumuladasDe(idFila);
       if(hijos.length){
         var ahora = firebase.firestore.FieldValue.serverTimestamp();
+        var nombreBase = antes ? (antes.rol+'-'+antes.anio) : idFila;
         promesa = promesa.then(function(){
           return ejecutarEnLotes(hijos, function(batch, lote){
             lote.forEach(function(id){ batch.update(db.collection('causas').doc(String(id)), {estado:'En Tabla', actualizadoEn: ahora}); });
           });
+        }).then(function(){
+          return Promise.all(hijos.map(function(id){
+            var hijoAntes = estado.causas.find(function(c){ return String(c.idFila)===String(id); });
+            return registrarHistorial(hijoAntes || {idFila:id}, 'Pasó a Tabla (arrastrada por acumulación a '+nombreBase+')');
+          }));
         });
       }
     }
@@ -1669,12 +1763,58 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     // la barra flotante de "Preparar tabla" sobra ahí y solo confunde.
     var n = Object.keys(estado.seleccionStaging).length;
     document.getElementById('barraStaging').classList.toggle('oculto', vista==='traspaso' || n===0);
+    if(vista==='historial') cargarHistorial(true);
   }
   document.querySelectorAll('nav.etapas button').forEach(function(btn){
     btn.addEventListener('click', function(){ irAVista(btn.dataset.vista); });
   });
   document.getElementById('btnAbrirConfig').addEventListener('click', function(){ irAVista('config'); });
   document.getElementById('btnActualizarTodo').addEventListener('click', cargarTodo);
+
+  /* ---------------- vista 9: historial de cambios ---------------- */
+  var historialState = { ultimoDoc:null, terminado:false, cargando:false, total:0 };
+
+  function renderItemHistorial(d){
+    return '<div class="item-historial">'+
+      '<div class="rol-anio-historial">ROL '+(d.rol||'?')+'/'+(d.anio||'?')+(d.libro?'<span class="libro-historial">'+d.libro+'</span>':'')+'</div>'+
+      '<div class="desc-historial">'+(d.descripcion||'')+'</div>'+
+      '<div class="fecha-historial">'+(formatoFechaHora(d.fecha)||'—')+'</div>'+
+      '</div>';
+  }
+
+  function cargarHistorial(reiniciar){
+    var cont = document.getElementById('listaHistorial');
+    var btnMas = document.getElementById('btnCargarMasHistorial');
+    if(reiniciar) historialState = { ultimoDoc:null, terminado:false, cargando:false, total:0 };
+    if(historialState.cargando || historialState.terminado) return;
+    var esPrimeraPagina = !historialState.ultimoDoc;
+    if(esPrimeraPagina) cont.innerHTML = '<div class="vacio">Cargando…</div>';
+    historialState.cargando = true;
+    var consulta = db.collection('historial').orderBy('fecha','desc').limit(30);
+    if(historialState.ultimoDoc) consulta = consulta.startAfter(historialState.ultimoDoc);
+    consulta.get().then(function(snap){
+      historialState.cargando = false;
+      if(snap.empty){
+        if(esPrimeraPagina) cont.innerHTML = '<div class="vacio">Aún no hay cambios registrados.</div>';
+        historialState.terminado = true;
+        btnMas.classList.add('oculto');
+        return;
+      }
+      historialState.ultimoDoc = snap.docs[snap.docs.length-1];
+      if(snap.docs.length < 30) historialState.terminado = true;
+      var html = snap.docs.map(function(doc){ return renderItemHistorial(doc.data()); }).join('');
+      cont.innerHTML = esPrimeraPagina ? html : cont.innerHTML + html;
+      historialState.total += snap.docs.length;
+      document.getElementById('contadorHistorial').textContent = historialState.total+' registro(s)';
+      btnMas.classList.toggle('oculto', historialState.terminado);
+    }).catch(function(e){
+      historialState.cargando = false;
+      mostrarErrorGlobal(e);
+    });
+  }
+
+  document.getElementById('btnRecargarHistorial').addEventListener('click', function(){ cargarHistorial(true); });
+  document.getElementById('btnCargarMasHistorial').addEventListener('click', function(){ cargarHistorial(false); });
 
   /* ---------------- carga inicial ---------------- */
   /** Filas grises "brillando" mientras llegan los datos reales — se ve más
@@ -2052,14 +2192,6 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     if(!d) return '';
     var pad = function(n){ return ('0'+n).slice(-2); };
     return pad(d.getDate())+'-'+pad(d.getMonth()+1)+'-'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes());
-  }
-
-  /** true si "actualizadoEn" corresponde al día de hoy (hora local). */
-  function esDeHoy(valor){
-    var d = fechaDeActualizacion(valor);
-    if(!d) return false;
-    var hoy = new Date();
-    return d.getFullYear()===hoy.getFullYear() && d.getMonth()===hoy.getMonth() && d.getDate()===hoy.getDate();
   }
 
   /** Replica el criterio del backend: días para reanudar = (fecha suspensión + días) - hoy. */
@@ -2531,7 +2663,6 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   }
 
   var filtroTipoStock = '';
-  var filtroActualizadasHoy = false;
 
   function causasFiltradas(){
     var texto = (document.getElementById('buscadorStock').value||'').toLowerCase();
@@ -2542,7 +2673,6 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     return estado.causas.filter(function(c){
       if(filtroEstado && c.estado!==filtroEstado) return false;
       if(filtroTipoStock && String(c.tipo||'').trim().toUpperCase()!==filtroTipoStock) return false;
-      if(filtroActualizadasHoy && !esDeHoy(c.actualizadoEn)) return false;
       if(filtroLibro && String(c.libro||'').trim()!==filtroLibro) return false;
       if(relacionDesde || relacionHasta){
         var mesAnio = mesAnioDeFecha(c.fechaRelacion);
@@ -2600,8 +2730,6 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     cont.querySelectorAll('.chip-anio').forEach(function(btn){
       btn.classList.toggle('activo', btn.dataset.tipo===filtroTipoStock);
     });
-    var chipHoy = document.getElementById('chipActualizadasHoy');
-    if(chipHoy) chipHoy.classList.toggle('activo', filtroActualizadasHoy);
   }
 
   (function(){
@@ -2612,15 +2740,6 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         filtroTipoStock = (filtroTipoStock===btn.dataset.tipo) ? '' : btn.dataset.tipo;
         renderStock();
       });
-    });
-  })();
-
-  (function(){
-    var chipHoy = document.getElementById('chipActualizadasHoy');
-    if(!chipHoy) return;
-    chipHoy.addEventListener('click', function(){
-      filtroActualizadasHoy = !filtroActualizadasHoy;
-      renderStock();
     });
   })();
 
@@ -2707,9 +2826,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         '<td class="celda-suspension" data-id="'+c.idFila+'">'+textoSuspension(c)+'</td>'+
         '<td class="celda-reanudar" data-id="'+c.idFila+'">'+textoDiasReanudar(c)+'</td>'+
         '<td>'+(c.fechaIngreso||'')+'</td><td>'+(c.fechaRelacion||'')+'</td>'+
-        '<td class="celda-actualizado" title="'+(c.actualizadoEn?escaparAtributo(formatoFechaHora(c.actualizadoEn)):'Sin cambios desde la carga')+'">'+(c.actualizadoEn?formatoFechaHora(c.actualizadoEn):'—')+'</td>'+
         '<td class="celda-acciones">'+(esDup?'<button class="btn btn-peligro btnEliminarDup" data-id="'+c.idFila+'">Eliminar</button>':'')+'</td></tr>';
-    }).join('') || filaVacia(15, 'No encontramos causas con ese filtro', 'Prueba ajustando la búsqueda, el libro o el estado.');
+    }).join('') || filaVacia(14, 'No encontramos causas con ese filtro', 'Prueba ajustando la búsqueda, el libro o el estado.');
 
     tbody.querySelectorAll('.chkStock').forEach(function(chk){
       chk.addEventListener('click', function(e){ e.stopPropagation(); });
@@ -2826,7 +2944,6 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     document.getElementById('filtroRelacionDesde').value='';
     document.getElementById('filtroRelacionHasta').value='';
     filtroTipoStock='';
-    filtroActualizadasHoy=false;
     soloDuplicados=false;
     document.getElementById('btnDuplicados').innerHTML = ICONOS.duplicado+' Ver duplicados';
     renderStock();
