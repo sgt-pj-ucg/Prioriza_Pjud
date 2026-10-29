@@ -334,6 +334,7 @@ tr.fila-seleccionada td{background:#fff3f7!important;}
 .chip-estado[data-estado="Desistida"]{--clr:var(--rojo);}
 .chip-marca[data-marca="rija"]{--clr:var(--rojo);}
 .chip-marca[data-marca="acumulada"]{--clr:var(--cian);}
+.chip-marca[data-marca="pesca"]{--clr:var(--azul-medio);}
 .chip-count{font-weight:700;font-variant-numeric:tabular-nums;}
 
 /* -------- mini panel: cantidad de causas visibles según filtro activo -------- */
@@ -769,6 +770,7 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
             <div class="chips-anios" id="chipsMarcasStock">
               <button type="button" class="chip-marca" data-marca="rija">⚑ RIJA <span class="chip-count"></span></button>
               <button type="button" class="chip-marca" data-marca="acumulada">⛓ Acumuladas <span class="chip-count"></span></button>
+              <button type="button" class="chip-marca" data-marca="pesca" title="Materia: Pesca y Acuicultura">🐟 Pesca <span class="chip-count"></span></button>
             </div>
           </div>
         </div>
@@ -2791,6 +2793,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   var filtroTipoStock = '';
   var filtroRijaStock = false;
   var filtroAcumuladaStock = false;
+  var filtroPescaStock = false;
 
   /** `omitir` deja de aplicar UN filtro puntual ('estado'|'rija'|'acumulada') — lo usan
    *  los contadores de los chips para mostrar cuántas causas quedarían con ESE chip
@@ -2806,6 +2809,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(filtroTipoStock && String(c.tipo||'').trim().toUpperCase()!==filtroTipoStock) return false;
       if(omitir!=='rija' && filtroRijaStock && String(c.rija||'').toUpperCase().indexOf('RIJA')<0) return false;
       if(omitir!=='acumulada' && filtroAcumuladaStock && !c.acumulada) return false;
+      if(omitir!=='pesca' && filtroPescaStock && !esPesca(c)) return false;
       if(filtroLibro && String(c.libro||'').trim()!==filtroLibro) return false;
       if(relacionDesde || relacionHasta){
         var mesAnio = mesAnioDeFecha(c.fechaRelacion);
@@ -2909,19 +2913,22 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     });
   })();
 
-  /** Chips de "Marcas": RIJA y Acumuladas, cada una con su propio filtro independiente
-   *  y su contador (cuántas causas quedarían con ese filtro, sobre el resto de filtros). */
+  /** Chips de "Marcas": RIJA, Acumuladas y Pesca (materia "Pesca y Acuicultura"), cada
+   *  una con su propio filtro independiente y su contador (cuántas causas quedarían con
+   *  ese filtro, sobre el resto de filtros). */
   function renderChipsMarcasStock(){
     var cont = document.getElementById('chipsMarcasStock');
     if(!cont) return;
     var conRija = causasFiltradas('rija').filter(function(c){ return String(c.rija||'').toUpperCase().indexOf('RIJA')>-1; }).length;
     var conAcum = causasFiltradas('acumulada').filter(function(c){ return c.acumulada; }).length;
+    var conPesca = causasFiltradas('pesca').filter(esPesca).length;
+    var conteos = { rija:conRija, acumulada:conAcum, pesca:conPesca };
+    var activos = { rija:filtroRijaStock, acumulada:filtroAcumuladaStock, pesca:filtroPescaStock };
     cont.querySelectorAll('.chip-marca').forEach(function(btn){
       var marca = btn.dataset.marca;
-      var activo = marca==='rija' ? filtroRijaStock : filtroAcumuladaStock;
-      btn.classList.toggle('activo', activo);
+      btn.classList.toggle('activo', activos[marca]);
       var span = btn.querySelector('.chip-count');
-      if(span) span.textContent = marca==='rija' ? conRija : conAcum;
+      if(span) span.textContent = conteos[marca];
     });
   }
 
@@ -2933,6 +2940,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         var marca = btn.dataset.marca;
         if(marca==='rija') filtroRijaStock = !filtroRijaStock;
         else if(marca==='acumulada') filtroAcumuladaStock = !filtroAcumuladaStock;
+        else if(marca==='pesca') filtroPescaStock = !filtroPescaStock;
         renderStock();
       });
     });
@@ -3143,6 +3151,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     filtroTipoStock='';
     filtroRijaStock=false;
     filtroAcumuladaStock=false;
+    filtroPescaStock=false;
     soloDuplicados=false;
     document.getElementById('btnDuplicados').innerHTML = ICONOS.duplicado+' Ver duplicados';
     renderStock();
