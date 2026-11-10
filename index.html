@@ -1374,6 +1374,17 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     'complejidad','tipo','estado','rija','fechaSuspension','diasSuspension','comentarios',
     'acumulada','causaBaseId','causaBaseRol','causaBaseAnio','recursoHecho'];
 
+  /** El LIBRO llega con distinta escritura según la planilla ("Civil", "CIVIL", "Laboral - Cobranza",
+   *  "LABORAL - COBRANZA"): todo cruce por libro (prioridad del Índice, filtros, agrupaciones) debe
+   *  compararlo sin distinguir mayúsculas, tildes ni espacios/signos. */
+  function claveLibro(libro){
+    return String(libro||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Z0-9]/g,'');
+  }
+  function mismoLibro(a, b){
+    var ka = claveLibro(a);
+    return ka!=='' && ka===claveLibro(b);
+  }
+
   function claveCruce(rol, anio, libro){
     return String(rol||'')+'|'+String(anio||'')+'|'+String(libro||'').trim().toUpperCase();
   }
@@ -1449,16 +1460,14 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   function accionListar(){
     return Promise.all([
       db.collection('causas').get(),
-      db.collection('config').doc('niveles').get(),
-      db.collection('stock').get()
+      db.collection('config').doc('niveles').get()
     ]).then(function(res){
-      var causasSnap = res[0], cfgDoc = res[1], stockSnap = res[2];
+      var causasSnap = res[0], cfgDoc = res[1];
       var niveles = (cfgDoc.exists && cfgDoc.data().niveles) || [];
       return {
         ok:true,
         causas: causasSnap.docs.map(docACausa),
-        config: niveles,
-        stockCount: stockSnap.size
+        config: niveles
       };
     });
   }
@@ -1599,7 +1608,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(dias!==null && dias<=0){ puntaje+=600; motivos.push('Suspensión vencida (días para reanudar ≤ 0)'); conteo.colP++; }
       for(var i=0;i<prioridad.length;i++){
         var nivel = prioridad[i];
-        if(nivel.libro && nivel.libro!=='(Ninguno)' && String(c.libro).trim()===String(nivel.libro).trim()){
+        if(nivel.libro && nivel.libro!=='(Ninguno)' && mismoLibro(c.libro, nivel.libro)){
           puntaje += Number(nivel.puntaje)||0;
           motivos.push('Libro prioridad '+nivel.nivel+' ('+nivel.libro+')');
           break;
@@ -1626,7 +1635,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var niveles = prioridad.map(function(p,i){
       return { nivel:i+1, libro:p.libro||'(Ninguno)', puntaje: p.puntaje || PUNTAJES_LIBRO_DEFECTO[i] || 0 };
     });
-    return db.collection('config').doc('niveles').set({ niveles: niveles }).then(function(){ return { ok:true }; });
+    return db.collection('config').doc('niveles').set({ niveles: niveles }).then(function(){ return { ok:true, niveles:niveles }; });
   }
 
   /** IDs de las causas acumuladas a una causa base dada (se lee del estado ya
@@ -1852,12 +1861,29 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
    *  reemplazar, etc.) — así el Dashboard, Ranking, Traspaso, Reportes e
    *  Informe Mensual quedan al día sin que la persona tenga que apretar
    *  "Actualizar" a mano cada vez. */
+  /** La selección para Traspaso guarda copias de las causas: tras recargar datos se
+   *  actualizan con la versión vigente y se descartan las que ya no existen (por
+   *  ejemplo después de reemplazar la base), para no intentar traspasar causas fantasma. */
+  function sincronizarStaging(){
+    var vigentes = {};
+    estado.causas.forEach(function(c){ vigentes[c.idFila] = c; });
+    Object.keys(estado.seleccionStaging).forEach(function(id){
+      if(vigentes[id]) estado.seleccionStaging[id] = vigentes[id];
+      else delete estado.seleccionStaging[id];
+    });
+    renderBarraStaging();
+  }
+
   function refrescarVistasDerivadas(){
+    sincronizarStaging();
+    ['filtroLibroStock','filtroLibroDashboard','filtroLibroReportes'].forEach(function(id){
+      poblarFiltroLibro(document.getElementById(id), estado.causas);
+    });
     actualizarResumenHeader();
     renderStock();
     renderReportesLocal();
     renderDashboard();
-    renderRanking();
+    recalcularRankingSiGenerado().then(renderRanking);
     renderTraspaso();
     renderInformeMensual();
   }
@@ -1954,6 +1980,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       poblarFiltroLibro(document.getElementById('filtroLibroStock'), estado.causas);
       poblarFiltroLibro(document.getElementById('filtroLibroDashboard'), estado.causas);
       poblarFiltroLibro(document.getElementById('filtroLibroReportes'), estado.causas);
+      sincronizarStaging();
       actualizarResumenHeader();
       renderReportesLocal();
       renderStock();
@@ -1961,6 +1988,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       renderTraspaso();
       renderDashboard();
       renderInformeMensual();
+      recalcularRankingSiGenerado().then(renderRanking);
     }).catch(mostrarErrorGlobal);
   }
 
@@ -2085,7 +2113,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var libro = document.getElementById('filtroLibroReportes').value;
     return causas.filter(function(c){
       if(estado.filtroReportes && c.estado!==estado.filtroReportes) return false;
-      if(libro && String(c.libro||'').trim()!==libro) return false;
+      if(libro && !mismoLibro(c.libro, libro)) return false;
       if(!texto) return true;
       var pack = [c.rol,c.anio,c.libro,c.materia,c.tipo].join(' ').toLowerCase();
       return pack.indexOf(texto) > -1;
@@ -2343,7 +2371,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   function renderDashboard(){
     if(!document.getElementById('kpisDashboard')) return;
     var libroElegido = document.getElementById('filtroLibroDashboard').value;
-    var causasLibro = libroElegido ? estado.causas.filter(function(c){ return String(c.libro||'').trim()===libroElegido; }) : estado.causas;
+    var causasLibro = libroElegido ? estado.causas.filter(function(c){ return mismoLibro(c.libro, libroElegido); }) : estado.causas;
     var acumuladas = causasLibro.filter(function(c){ return !!c.acumulada; });
     // las causas acumuladas quedan fuera de todos los indicadores de gestión — se muestran aparte.
     // "Total en stock" sí las incluye (coincide con el encabezado: es TODO lo que hay cargado).
@@ -2586,9 +2614,12 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     if(!document.getElementById('tablaInformeResumen')) return;
     var causas = estado.causas.filter(function(c){ return c.estado==='Disponible' && !c.acumulada; });
 
-    var pivot = {};
+    var pivot = {}, etiquetaLibro = {};
     causas.forEach(function(c){
-      var libro = c.libro || 'Sin libro';
+      // un mismo libro escrito distinto ("Civil"/"CIVIL") se agrupa en una sola fila del informe
+      var libroCrudo = String(c.libro||'').trim() || 'Sin libro', kLibro = claveLibro(libroCrudo);
+      if(!etiquetaLibro[kLibro]) etiquetaLibro[kLibro] = libroCrudo;
+      var libro = etiquetaLibro[kLibro];
       var anio = c.anio || 'Sin año';
       var tipo = String(c.tipo||'').trim().toUpperCase()==='A' ? 'A' : 'D';
       if(!pivot[libro]) pivot[libro] = {};
@@ -2767,13 +2798,24 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   document.getElementById('btnGenerarRanking').addEventListener('click', function(){
     var btn = this; btn.disabled = true; btn.textContent = 'Calculando...';
     llamarServicio({accion:'generarRanking'}).then(function(datos){
-      estado.ranking = datos.ranking;
-      document.getElementById('infoRanking').textContent =
-        'Disponibles: '+datos.disponibles+' · En el índice: '+datos.enRanking+
-        ' · RIJA: '+datos.conRIJA+' · Pesca: '+datos.conPesca+' · Susp. vencida: '+datos.conSuspensionVencida;
+      aplicarRanking(datos);
       renderRanking();
     }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.innerHTML=ICONOS.refrescar+' Generar Índice de Prioridad'; });
   });
+
+  function aplicarRanking(datos){
+    estado.ranking = datos.ranking;
+    document.getElementById('infoRanking').textContent =
+      'Disponibles: '+datos.disponibles+' · En el índice: '+datos.enRanking+
+      ' · RIJA: '+datos.conRIJA+' · Pesca: '+datos.conPesca+' · Susp. vencida: '+datos.conSuspensionVencida;
+  }
+
+  /** Si el Índice ya se había generado, se recalcula solo cuando cambian los datos o la
+   *  configuración — así nunca muestra causas que ya cambiaron de estado o que ya no existen. */
+  function recalcularRankingSiGenerado(){
+    if(!estado.ranking.length) return Promise.resolve();
+    return accionGenerarRanking().then(aplicarRanking);
+  }
 
   /** Prioridad visual de la fila en el Ranking: RIJA (naranja) > Pesca (verde) > vencida (lila).
    *  Se basa en el texto de "motivos" que ya calcula el backend, sin inventar reglas nuevas. */
@@ -2813,9 +2855,10 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
    *  presentes en los datos (no una lista fija), preservando la selección actual. */
   function poblarFiltroLibro(selectEl, causas){
     var valorActual = selectEl.value;
+    var vistos = {};
     var libros = Array.prototype.reduce.call(causas, function(acc, c){
-      var l = String(c.libro||'').trim();
-      if(l && acc.indexOf(l)===-1) acc.push(l);
+      var l = String(c.libro||'').trim(), k = claveLibro(l);
+      if(l && !vistos[k]){ vistos[k] = true; acc.push(l); }
       return acc;
     }, []).sort(function(a,b){ return a.localeCompare(b, 'es'); });
     selectEl.innerHTML = '<option value="">Todos los libros</option>' +
@@ -2852,7 +2895,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(omitir!=='acumulada' && filtroAcumuladaStock && !c.acumulada) return false;
       if(omitir!=='pesca' && filtroPescaStock && !esPesca(c)) return false;
       if(omitir!=='hecho' && filtroHechoStock && !c.recursoHecho) return false;
-      if(filtroLibro && String(c.libro||'').trim()!==filtroLibro) return false;
+      if(filtroLibro && !mismoLibro(c.libro, filtroLibro)) return false;
       if(relacionDesde || relacionHasta){
         var mesAnio = mesAnioDeFecha(c.fechaRelacion);
         if(!mesAnio) return false;
@@ -4185,7 +4228,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       var div = document.createElement('div');
       div.className='config-nivel';
       var opciones = LIBROS_DISPONIBLES.map(function(l){
-        return '<option value="'+l+'" '+(l===n.libro?'selected':'')+'>'+l+'</option>';
+        return '<option value="'+l+'" '+(mismoLibro(l, n.libro)||(l==='(Ninguno)'&&!n.libro)?'selected':'')+'>'+l+'</option>';
       }).join('');
       div.innerHTML = '<span class="etiqueta">Nivel '+n.nivel+' (+'+n.puntaje+' pts)</span><select data-nivel="'+n.nivel+'" data-puntaje="'+n.puntaje+'">'+opciones+'</select>';
       cont.appendChild(div);
@@ -4242,7 +4285,12 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var prioridad = Array.prototype.map.call(document.querySelectorAll('#nivelesConfig select'), function(sel){
       return { nivel: Number(sel.dataset.nivel), libro: sel.value, puntaje: Number(sel.dataset.puntaje) };
     });
-    llamarServicio({accion:'guardarConfig', prioridad: prioridad}).then(function(){
+    llamarServicio({accion:'guardarConfig', prioridad: prioridad}).then(function(datos){
+      // la configuración en memoria debe quedar igual a la guardada: de ahí lee el Índice de Prioridad
+      estado.config = datos.niveles;
+      return recalcularRankingSiGenerado();
+    }).then(function(){
+      renderRanking();
       mostrarToast('Configuración guardada.', 'exito');
     }).catch(mostrarErrorGlobal);
   });
