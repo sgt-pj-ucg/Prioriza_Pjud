@@ -504,6 +504,23 @@ textarea.paste{width:100%;min-height:140px;padding:var(--e3);border:1px solid va
   box-shadow:-12px 0 40px rgba(0,0,0,.2);transform:translateX(100%);transition:transform 220ms cubic-bezier(.4,0,.2,1);
   display:flex;flex-direction:column;z-index:201;}
 .drawer-fondo.abierto .drawer-panel{transform:translateX(0);}
+.drawer-resumen{width:min(560px,100vw);}
+.dato-solo.completo{grid-column:1/-1;}
+.dato-solo .val.suave{font-weight:500;color:var(--texto-suave);}
+.pill-si,.pill-no{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;margin-top:2px;}
+.pill-si{background:#FFF1DB;color:#9A5B00;border:1px solid #F0C98A;}
+.pill-si.rojo{background:#FBE6E3;color:#A32A1E;border-color:#F1B9B2;}
+.pill-si.verde{background:#E3F4EA;color:#17704A;border-color:#B5DFC8;}
+.pill-si.celeste{background:#E0F5F8;color:#0F6E80;border-color:#A9DCE5;}
+.pill-no{background:#F0F2F5;color:var(--texto-suave);border:1px solid var(--borde);font-weight:600;}
+.lista-acum-resumen{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;}
+.lista-acum-resumen li{font-size:12.5px;background:var(--superficie);border:1px solid var(--borde);border-radius:8px;padding:6px 10px;}
+.resumen-historial{display:flex;flex-direction:column;gap:6px;}
+.resumen-historial .cambio{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;background:var(--superficie);
+  border:1px solid var(--borde);border-radius:8px;padding:7px 10px;}
+.resumen-historial .cambio .fecha{color:var(--texto-suave);white-space:nowrap;font-size:11.5px;}
+.resumen-historial .vacio-mini{font-size:12.5px;color:var(--texto-suave);}
+.nota-resumen{margin:0;font-size:11.5px;color:var(--texto-suave);}
 .drawer-header{background:var(--azul-profundo);color:#fff;padding:var(--e3) var(--e4);border-bottom:3px solid var(--acento);
   display:flex;align-items:flex-start;justify-content:space-between;gap:var(--e2);flex:none;}
 .drawer-header h2{margin:0;font-size:16px;}
@@ -1066,67 +1083,39 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
 </div>
 
 <div id="modalEditar" class="drawer-fondo oculto">
-  <div class="drawer-panel">
+  <div class="drawer-panel drawer-resumen">
     <div class="drawer-header">
       <div>
-        <h2 id="editTitulo">Editar causa</h2>
+        <h2 id="editTitulo">Resumen de la causa</h2>
         <p id="editSubtitulo"></p>
       </div>
-      <button id="btnCerrarModalEditar">×</button>
+      <button id="btnCerrarModalEditar" aria-label="Cerrar">×</button>
     </div>
     <div class="drawer-cuerpo">
       <div class="drawer-seccion">
         <h3>Datos de la causa</h3>
-        <div class="grid-datos">
-          <div class="dato-solo"><div class="lbl">ROL</div><div class="val" id="verRol">—</div></div>
-          <div class="dato-solo"><div class="lbl">Año</div><div class="val" id="verAnio">—</div></div>
-          <div class="dato-solo"><div class="lbl">Libro</div><div class="val" id="verLibro">—</div></div>
-          <div class="dato-solo" style="grid-column:1/-1;"><div class="lbl">Materia</div><div class="val" id="verMateria">—</div></div>
-          <div class="dato-solo"><div class="lbl">Fecha ingreso</div><div class="val" id="verFechaIngreso">—</div></div>
-          <div class="dato-solo" style="grid-column:1/-1;"><div class="lbl">Fecha relación</div><div class="val" id="verFechaRelacion">—</div></div>
-          <div class="dato-solo" style="grid-column:1/-1;"><div class="lbl">Observación</div><div class="val" id="verObservacion">—</div></div>
-        </div>
+        <div class="grid-datos" id="resumenDatosCausa"></div>
       </div>
       <div class="drawer-seccion">
-        <h3>Editar</h3>
-        <div class="campo-editar campo-estado">
-          <label for="editEstado">Estado</label>
-          <select id="editEstado">
-            <option>Disponible</option><option>En Trámite</option><option>En Tabla</option>
-            <option>Suspendida Procedimiento</option><option>Desistida</option>
-          </select>
-        </div>
+        <h3>Situación actual</h3>
+        <div class="grid-datos" id="resumenSituacionCausa"></div>
+      </div>
+      <div class="drawer-seccion">
+        <h3>Últimos cambios de esta causa</h3>
+        <div class="resumen-historial" id="resumenHistorialCausa"></div>
+      </div>
+      <div class="drawer-seccion">
+        <h3>Observaciones</h3>
         <div class="campo-editar">
-          <label for="editTipo">Tipo</label>
-          <input type="text" id="editTipo" placeholder="Ej: D">
+          <label for="editComentarios">Observaciones e información importante de la causa</label>
+          <textarea id="editComentarios" placeholder="Escribe aquí cualquier observación relevante..."></textarea>
         </div>
-        <div class="campo-editar">
-          <label for="editComplejidad">Complejidad</label>
-          <select id="editComplejidad">
-            <option value="">(Sin definir)</option>
-            <option>Estudio (E)</option>
-            <option>Compleja (A)</option>
-            <option>Mediana complejidad (B)</option>
-            <option>No compleja (C)</option>
-          </select>
-        </div>
-        <div class="campo-editar">
-          <label for="editFechaSuspension">Fecha de suspensión</label>
-          <input type="date" id="editFechaSuspension">
-        </div>
-        <div class="campo-editar">
-          <label for="editDiasSuspension">Cantidad de días de suspensión</label>
-          <input type="number" id="editDiasSuspension" min="0" placeholder="Ej: 30">
-        </div>
-        <div class="campo-editar">
-          <label for="editComentarios">Comentarios</label>
-          <textarea id="editComentarios" placeholder="Observaciones internas..."></textarea>
-        </div>
+        <p class="nota-resumen">El estado, RIJA, complejidad y suspensión se modifican directamente en la fila de la causa.</p>
       </div>
     </div>
     <div class="drawer-acciones">
-      <button class="btn btn-secundario" id="btnCancelarEdicion">Cancelar</button>
-      <button class="btn btn-primario" id="btnGuardarEdicion">Guardar cambios</button>
+      <button class="btn btn-secundario" id="btnCancelarEdicion">Cerrar</button>
+      <button class="btn btn-primario" id="btnGuardarEdicion">Guardar observación</button>
     </div>
   </div>
 </div>
@@ -1586,6 +1575,27 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
    *  cliente porque Firestore no ejecuta lógica de negocio por sí solo (no
    *  hay equivalente a un Apps Script aquí, así que el cálculo puro se hace
    *  en JS con los datos que ya están en memoria tras el último "listar"). */
+  /** Puntaje de prioridad de UNA causa (RIJA, Pesca, suspension vencida y libro segun la Configuracion).
+   *  Lo usan el Indice de Prioridad y el resumen de la causa, para que ambos muestren siempre lo mismo. */
+  function calcularPuntajeCausa(c, prioridad){
+    prioridad = prioridad || [];
+    var puntaje = 0, motivos = [], rija = false, pesca = false, venc = false;
+    if(String(c.rija||'').toUpperCase().indexOf('RIJA')>-1){ puntaje+=1000; motivos.push('Contiene RIJA'); rija = true; }
+    if(esPesca(c)){ puntaje+=800; motivos.push('Materia: Pesca y Acuicultura'); pesca = true; }
+    // solo cuenta si la causa SIGUE suspendida: una causa que ya volvió a "Disponible" puede conservar la fecha/días antiguos
+    var dias = c.estado==='Suspendida Procedimiento' ? diasParaReanudarLocal(c) : null;
+    if(dias!==null && dias<=0){ puntaje+=600; motivos.push('Suspensión vencida (días para reanudar ≤ 0)'); venc = true; }
+    for(var i=0;i<prioridad.length;i++){
+      var nivel = prioridad[i];
+      if(nivel.libro && nivel.libro!=='(Ninguno)' && mismoLibro(c.libro, nivel.libro)){
+        puntaje += Number(nivel.puntaje)||0;
+        motivos.push('Libro prioridad '+nivel.nivel+' ('+nivel.libro+')');
+        break;
+      }
+    }
+    return { puntaje:puntaje, motivos:motivos, rija:rija, pesca:pesca, venc:venc };
+  }
+
   function accionGenerarRanking(){
     var causas = estado.causas.filter(function(c){
       if(c.acumulada) return false; // las causas acumuladas no compiten por sí solas en el índice
@@ -1600,21 +1610,11 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var conteo = { rija:0, pesca:0, colP:0 };
 
     var calculadas = causas.map(function(c){
-      var puntaje = 0, motivos = [];
-      if(String(c.rija||'').toUpperCase().indexOf('RIJA')>-1){ puntaje+=1000; motivos.push('Contiene RIJA'); conteo.rija++; }
-      var materiaMin = String(c.materia||'').toLowerCase();
-      if(materiaMin.indexOf('pesca')>-1 && materiaMin.indexOf('acuicultura')>-1){ puntaje+=800; motivos.push('Materia: Pesca y Acuicultura'); conteo.pesca++; }
-      // solo cuenta si la causa SIGUE suspendida: una causa que ya volvió a "Disponible" puede conservar la fecha/días antiguos
-      var dias = c.estado==='Suspendida Procedimiento' ? diasParaReanudarLocal(c) : null;
-      if(dias!==null && dias<=0){ puntaje+=600; motivos.push('Suspensión vencida (días para reanudar ≤ 0)'); conteo.colP++; }
-      for(var i=0;i<prioridad.length;i++){
-        var nivel = prioridad[i];
-        if(nivel.libro && nivel.libro!=='(Ninguno)' && mismoLibro(c.libro, nivel.libro)){
-          puntaje += Number(nivel.puntaje)||0;
-          motivos.push('Libro prioridad '+nivel.nivel+' ('+nivel.libro+')');
-          break;
-        }
-      }
+      var calc = calcularPuntajeCausa(c, prioridad);
+      var puntaje = calc.puntaje, motivos = calc.motivos;
+      if(calc.rija) conteo.rija++;
+      if(calc.pesca) conteo.pesca++;
+      if(calc.venc) conteo.colP++;
       var fechaOrden = 99999999999;
       var fr = parsearFechaLocal(c.fechaRelacion);
       if(fr) fechaOrden = fr.getTime();
@@ -1700,7 +1700,10 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       partes.push(cambios.acumulada
         ? 'Acumulada a la causa base ROL '+(cambios.causaBaseRol||'?')+'/'+(cambios.causaBaseAnio||'?')
         : 'Desacumulada de la causa base ROL '+(antes.causaBaseRol||'?')+'/'+(antes.causaBaseAnio||'?'));
-    if('comentarios' in cambios && !igual(antes.comentarios, cambios.comentarios)) partes.push('Observación actualizada');
+    if('comentarios' in cambios && !igual(antes.comentarios, cambios.comentarios)){
+      var txt = String(cambios.comentarios||'').trim();
+      partes.push(txt ? 'Observación: «'+(txt.length>90 ? txt.slice(0,90)+'…' : txt)+'»' : 'Observación eliminada');
+    }
     return partes.join('; ');
   }
 
@@ -3405,38 +3408,100 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     return '';
   }
 
+  function datoResumen(etiqueta, valorHtml, completo){
+    return '<div class="dato-solo'+(completo?' completo':'')+'"><div class="lbl">'+etiqueta+'</div><div class="val">'+valorHtml+'</div></div>';
+  }
+  function pillSiNo(si, textoSi, color){
+    return si ? '<span class="pill-si '+(color||'')+'">'+textoSi+'</span>' : '<span class="pill-no">No</span>';
+  }
+
+  /** Resumen de la causa (solo lectura): todo su estado actual en un solo lugar. Lo unico
+   *  editable es la observacion; el resto se cambia directo en la fila de la causa. */
   function abrirModalEditar(idFila){
     var causa = estado.causas.find(function(c){ return String(c.idFila)===String(idFila); });
     if(!causa) return;
     modalEditar.dataset.idFila = idFila;
-    modalEditar.dataset.estadoOriginal = causa.estado || '';
-    document.getElementById('editTitulo').textContent = 'ROL '+(causa.rol||'')+'/'+(causa.anio||'')+' · '+(causa.libro||'');
-    document.getElementById('editSubtitulo').textContent = causa.estado || '';
-    document.getElementById('verRol').textContent = causa.rol || '—';
-    document.getElementById('verAnio').textContent = causa.anio || '—';
-    document.getElementById('verLibro').textContent = causa.libro || '—';
-    document.getElementById('verMateria').textContent = causa.materia || '—';
-    document.getElementById('verFechaIngreso').textContent = causa.fechaIngreso || '—';
-    document.getElementById('verFechaRelacion').textContent = causa.fechaRelacion || '—';
-    document.getElementById('verObservacion').textContent = causa.observacion || '—';
-    document.getElementById('editTipo').value = causa.tipo || '';
-    var selComplejidad = document.getElementById('editComplejidad');
-    var opcionesComplejidad = ['', 'Estudio (E)', 'Compleja (A)', 'Mediana complejidad (B)', 'No compleja (C)'];
-    // preserva valores antiguos que no calzan con el catálogo nuevo, en vez de perderlos
-    Array.prototype.slice.call(selComplejidad.options, 4).forEach(function(o){ o.remove(); });
-    if (causa.complejidad && opcionesComplejidad.indexOf(causa.complejidad) === -1) {
-      var op = document.createElement('option');
-      op.textContent = causa.complejidad + ' (valor anterior)';
-      op.value = causa.complejidad;
-      selComplejidad.appendChild(op);
+    var esc = escaparAtributo;
+    var vacio = '<span style="color:var(--texto-suave);font-weight:500;">\u2014</span>';
+    var v = function(x){ return x ? esc(x) : vacio; };
+
+    document.getElementById('editTitulo').textContent = 'ROL '+(causa.rol||'')+'/'+(causa.anio||'')+' \u00b7 '+(causa.libro||'');
+    document.getElementById('editSubtitulo').textContent = 'Resumen de la causa';
+
+    document.getElementById('resumenDatosCausa').innerHTML =
+      datoResumen('ROL', v(causa.rol)) + datoResumen('A\u00f1o', v(causa.anio)) +
+      datoResumen('Libro', v(causa.libro)) + datoResumen('Tipo', v(causa.tipo)) +
+      datoResumen('Materia', v(materiaLimpia(causa.materia)), true) +
+      datoResumen('Fecha ingreso', v(causa.fechaIngreso)) + datoResumen('Fecha relaci\u00f3n', v(causa.fechaRelacion)) +
+      (causa.observacion ? datoResumen('Observaci\u00f3n de la planilla', esc(causa.observacion), true) : '');
+
+    // --- situacion actual ---
+    var tieneRija = String(causa.rija||'').toUpperCase().indexOf('RIJA')>-1;
+    var hijos = estado.causas.filter(function(c){ return c.acumulada && String(c.causaBaseId)===String(causa.idFila); });
+    var acumHtml;
+    if(causa.acumulada){
+      var base = estado.causas.find(function(c){ return String(c.idFila)===String(causa.causaBaseId); });
+      acumHtml = '<span class="pill-si celeste">Acumulada</span> a la causa base ROL '+esc(causa.causaBaseRol||'?')+'/'+esc(causa.causaBaseAnio||'?')+
+        (base ? ' \u00b7 '+esc(base.libro||'')+' \u00b7 '+esc(base.estado||'') : '');
+    } else if(hijos.length){
+      acumHtml = '<span class="pill-si celeste">Causa base</span> con '+hijos.length+' acumulada(s):'+
+        '<ul class="lista-acum-resumen">'+hijos.map(function(h){
+          return '<li>ROL '+esc(h.rol||'')+'/'+esc(h.anio||'')+' \u00b7 '+esc(h.libro||'')+' \u00b7 '+esc(h.estado||'')+'</li>';
+        }).join('')+'</ul>';
+    } else {
+      acumHtml = '<span class="pill-no">Sin acumulaciones</span>';
     }
-    selComplejidad.value = causa.complejidad || '';
-    document.getElementById('editFechaSuspension').value = fechaAFormatoInput(causa.fechaSuspension);
-    document.getElementById('editDiasSuspension').value = causa.diasSuspension || '';
+
+    var suspHtml;
+    if(causa.estado==='Suspendida Procedimiento' || causa.fechaSuspension || causa.diasSuspension){
+      suspHtml = (causa.fechaSuspension ? 'Desde '+esc(causa.fechaSuspension) : 'Sin fecha')+' por '+esc(causa.diasSuspension||'\u2014')+' d\u00eda(s)'+
+        (causa.estado==='Suspendida Procedimiento' ? ' \u00b7 '+textoDiasReanudar(causa) : ' <span class="val suave">(ya no est\u00e1 suspendida)</span>');
+    } else {
+      suspHtml = '<span class="pill-no">No suspendida</span>';
+    }
+
+    var calc = calcularPuntajeCausa(causa, estado.config);
+    var diasR = diasParaReanudarLocal(causa);
+    var compite = !causa.acumulada && (causa.estado==='Disponible' ||
+      (causa.estado==='Suspendida Procedimiento' && diasR!==null && diasR<=0));
+    var prioridadHtml = causa.acumulada ? '<span class="pill-no">No compite por s\u00ed sola (acumulada)</span>'
+      : (compite ? '<b>'+calc.puntaje+' pts</b>'+(calc.motivos.length ? ' \u00b7 <span class="val suave">'+esc(calc.motivos.join(' \u00b7 '))+'</span>' : ' \u00b7 <span class="val suave">sin criterios adicionales (se ordena por fecha de relaci\u00f3n)</span>')
+                 : '<span class="pill-no">No participa del \u00cdndice (estado '+esc(causa.estado||'')+')</span>');
+
+    document.getElementById('resumenSituacionCausa').innerHTML =
+      datoResumen('Estado', chipEstado(causa.estado)) +
+      datoResumen('Complejidad', causa.complejidad ? esc(causa.complejidad) : '<span class="pill-no">(Sin definir)</span>') +
+      datoResumen('RIJA', pillSiNo(tieneRija, 'S\u00ed', 'rojo')) +
+      datoResumen('Pesca y Acuicultura', pillSiNo(esPesca(causa), 'S\u00ed', 'verde')) +
+      datoResumen('Recurso de hecho', pillSiNo(!!causa.recursoHecho, 'S\u00ed')) +
+      datoResumen('\u00daltima modificaci\u00f3n', causa.actualizadoEn ? esc(formatoFechaHora(causa.actualizadoEn)) : '<span class="val suave">Sin cambios desde la carga</span>') +
+      datoResumen('Acumulaci\u00f3n', acumHtml, true) +
+      datoResumen('Suspensi\u00f3n', suspHtml, true) +
+      datoResumen('Prioridad en el \u00cdndice', prioridadHtml, true);
+
     document.getElementById('editComentarios').value = causa.comentarios || '';
-    document.getElementById('editEstado').value = causa.estado || 'Disponible';
+    cargarHistorialDeCausa(idFila);
     modalEditar.classList.remove('oculto');
     requestAnimationFrame(function(){ modalEditar.classList.add('abierto'); });
+  }
+
+  /** Ultimos cambios registrados para esta causa (coleccion "historial"). Se filtra por
+   *  causaId y se ordena aqui mismo para no exigir un indice compuesto en Firestore. */
+  function cargarHistorialDeCausa(idFila){
+    var cont = document.getElementById('resumenHistorialCausa');
+    cont.innerHTML = '<div class="vacio-mini">Cargando\u2026</div>';
+    db.collection('historial').where('causaId','==',String(idFila)).get().then(function(snap){
+      if(String(modalEditar.dataset.idFila)!==String(idFila)) return;
+      var items = snap.docs.map(function(d){ return d.data(); }).sort(function(x,y){
+        var fx = fechaDeActualizacion(x.fecha), fy = fechaDeActualizacion(y.fecha);
+        return (fy?fy.getTime():0)-(fx?fx.getTime():0);
+      }).slice(0,8);
+      cont.innerHTML = items.length
+        ? items.map(function(h){ return '<div class="cambio"><span>'+escaparAtributo(h.descripcion||'')+'</span><span class="fecha">'+(formatoFechaHora(h.fecha)||'')+'</span></div>'; }).join('')
+        : '<div class="vacio-mini">Sin cambios registrados desde que se activ\u00f3 el historial.</div>';
+    }).catch(function(){
+      if(String(modalEditar.dataset.idFila)===String(idFila)) cont.innerHTML = '<div class="vacio-mini">No se pudo cargar el historial.</div>';
+    });
   }
 
   function cerrarModalEditar(){
@@ -3450,27 +3515,17 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
   document.getElementById('btnGuardarEdicion').addEventListener('click', function(){
     var idFila = modalEditar.dataset.idFila;
-    var estadoElegido = document.getElementById('editEstado').value;
-    var fechaSuspensionInput = document.getElementById('editFechaSuspension').value.trim();
-    var diasSuspensionInput = document.getElementById('editDiasSuspension').value.trim();
-    if(estadoElegido === 'Suspendida Procedimiento' && (!fechaSuspensionInput || !diasSuspensionInput)){
-      mostrarToast('Para dejar la causa "Suspendida Procedimiento" es obligatorio indicar la Fecha de suspensión y la Cantidad de días.', 'error');
-      return;
-    }
+    var causa = estado.causas.find(function(c){ return String(c.idFila)===String(idFila); });
+    var nuevo = document.getElementById('editComentarios').value.trim();
+    if(causa && nuevo === String(causa.comentarios||'').trim()){ mostrarToast('No hay cambios en la observaci\u00f3n.', 'info'); return; }
     var btn = this; btn.disabled = true; btn.textContent = 'Guardando...';
-    var cambios = {
-      tipo: document.getElementById('editTipo').value.trim(),
-      complejidad: document.getElementById('editComplejidad').value.trim(),
-      fechaSuspension: fechaSuspensionInput ? formatoInputAFecha(fechaSuspensionInput) : '',
-      diasSuspension: diasSuspensionInput,
-      comentarios: document.getElementById('editComentarios').value.trim(),
-      estado: estadoElegido
-    };
+    var cambios = { comentarios: nuevo };
     llamarServicio({accion:'actualizarCausa', idFila: idFila, cambios: cambios}).then(function(){
       aplicarCambiosLocales(idFila, cambios);
       refrescarVistasDerivadas();
       cerrarModalEditar();
-    }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Guardar cambios'; });
+      mostrarToast('Observaci\u00f3n guardada.', 'exito');
+    }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Guardar observaci\u00f3n'; });
   });
 
   /* ================= CAUSAS ACUMULADAS =================
