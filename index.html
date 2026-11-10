@@ -1604,7 +1604,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(String(c.rija||'').toUpperCase().indexOf('RIJA')>-1){ puntaje+=1000; motivos.push('Contiene RIJA'); conteo.rija++; }
       var materiaMin = String(c.materia||'').toLowerCase();
       if(materiaMin.indexOf('pesca')>-1 && materiaMin.indexOf('acuicultura')>-1){ puntaje+=800; motivos.push('Materia: Pesca y Acuicultura'); conteo.pesca++; }
-      var dias = diasParaReanudarLocal(c);
+      // solo cuenta si la causa SIGUE suspendida: una causa que ya volvió a "Disponible" puede conservar la fecha/días antiguos
+      var dias = c.estado==='Suspendida Procedimiento' ? diasParaReanudarLocal(c) : null;
       if(dias!==null && dias<=0){ puntaje+=600; motivos.push('Suspensión vencida (días para reanudar ≤ 0)'); conteo.colP++; }
       for(var i=0;i<prioridad.length;i++){
         var nivel = prioridad[i];
@@ -1672,44 +1673,35 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
    *  (leídos de estado.causas en memoria) contra los nuevos valores enviados. */
   function descripcionCambios(antes, cambios){
     antes = antes || {};
+    cambios = cambios || {};
+    var igual = function(x, y){
+      if(typeof x==='boolean' || typeof y==='boolean') return !!x===!!y;
+      return String(x==null?'':x).trim()===String(y==null?'':y).trim();
+    };
     var partes = [];
-    Object.keys(cambios||{}).forEach(function(campo){
-      var nuevo = cambios[campo];
-      switch(campo){
-        case 'estado':
-          partes.push('Estado: '+(antes.estado||'—')+' → '+nuevo);
-          break;
-        case 'rija':
-          partes.push(nuevo ? 'RIJA marcada' : 'RIJA desmarcada');
-          break;
-        case 'complejidad':
-          partes.push('Complejidad: '+(antes.complejidad||'—')+' → '+(nuevo||'—'));
-          break;
-        case 'fechaSuspension':
-          partes.push('Suspensión: hasta '+(nuevo||'—')+(cambios.diasSuspension!=null?' ('+cambios.diasSuspension+' días)':''));
-          break;
-        case 'diasSuspension':
-          if(cambios.fechaSuspension===undefined) partes.push('Días para reanudar: '+nuevo);
-          break;
-        case 'acumulada':
-          partes.push(nuevo ? 'Acumulada a causa base '+(cambios.causaBaseRol||'?')+'-'+(cambios.causaBaseAnio||'?') : 'Desacumulada');
-          break;
-        case 'materia':
-          partes.push('Materia: '+(antes.materia||'—')+' → '+(nuevo||'—'));
-          break;
-        case 'tipo':
-          partes.push('Tipo: '+(antes.tipo||'—')+' → '+(nuevo||'—'));
-          break;
-        case 'observacion': case 'comentarios':
-          partes.push('Observación actualizada');
-          break;
-        case 'causaBaseId': case 'causaBaseRol': case 'causaBaseAnio': case 'actualizadoEn':
-          break;
-        default:
-          partes.push(campo+' actualizado');
-      }
+    if('estado' in cambios && !igual(antes.estado||'Disponible', cambios.estado))
+      partes.push('Estado: '+(antes.estado||'—')+' → '+cambios.estado);
+    if('rija' in cambios){
+      var tenia = String(antes.rija||'').toUpperCase().indexOf('RIJA')>-1;
+      var tiene = String(cambios.rija||'').toUpperCase().indexOf('RIJA')>-1;
+      if(tenia!==tiene) partes.push(tiene ? 'RIJA marcada' : 'RIJA desmarcada');
+    }
+    [['complejidad','Complejidad'],['materia','Materia'],['tipo','Tipo']].forEach(function(par){
+      if(par[0] in cambios && !igual(antes[par[0]], cambios[par[0]]))
+        partes.push(par[1]+': '+(antes[par[0]]||'—')+' → '+(cambios[par[0]]||'—'));
     });
-    return partes.length ? partes.join('; ') : 'Datos actualizados';
+    if(('fechaSuspension' in cambios && !igual(antes.fechaSuspension, cambios.fechaSuspension)) ||
+       ('diasSuspension' in cambios && !igual(antes.diasSuspension, cambios.diasSuspension))){
+      var f = 'fechaSuspension' in cambios ? cambios.fechaSuspension : antes.fechaSuspension;
+      var d = 'diasSuspension' in cambios ? cambios.diasSuspension : antes.diasSuspension;
+      partes.push((f||d) ? 'Suspensión: desde '+(f||'—')+' por '+(d||'—')+' día(s)' : 'Suspensión: fecha y días eliminados');
+    }
+    if('acumulada' in cambios && !igual(antes.acumulada, cambios.acumulada))
+      partes.push(cambios.acumulada
+        ? 'Acumulada a la causa base ROL '+(cambios.causaBaseRol||'?')+'/'+(cambios.causaBaseAnio||'?')
+        : 'Desacumulada de la causa base ROL '+(antes.causaBaseRol||'?')+'/'+(antes.causaBaseAnio||'?'));
+    if('comentarios' in cambios && !igual(antes.comentarios, cambios.comentarios)) partes.push('Observación actualizada');
+    return partes.join('; ');
   }
 
   /** Marca/desmarca "recurso de hecho" según el inventario: `claves` son las ROL|AÑO|LIBRO
@@ -1759,6 +1751,23 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         return registrarHistorial(antes || {idFila:id}, desc);
       }));
     }).then(function(){ return { ok:true, actualizadas: idsFila.length, arrastradas: conArrastre.length-idsFila.length }; });
+  }
+
+  /** Refleja en la copia en memoria lo que acaba de guardarse en Firestore, en vez de volver
+   *  a descargar las ~2.900 causas tras cada acción (ahorra lecturas de la cuota diaria y
+   *  evita esperas de varios segundos). Replica la regla de accionActualizarCausa: una causa
+   *  base que pasa a "En Tabla" arrastra a sus acumuladas. */
+  function aplicarCambiosLocales(idFila, cambios){
+    var ahora = new Date();
+    var ids = [String(idFila)];
+    if(cambios && cambios.estado === 'En Tabla') ids = ids.concat(idsAcumuladasDe(idFila).map(String));
+    ids.forEach(function(id, i){
+      var c = estado.causas.find(function(x){ return String(x.idFila)===id; });
+      if(!c) return;
+      if(i===0) Object.keys(cambios).forEach(function(k){ c[k] = cambios[k]; });
+      else c.estado = 'En Tabla';
+      c.actualizadoEn = ahora;
+    });
   }
 
   /** Cualquier cambio sobre una causa (estado, RIJA, complejidad, acumular/desacumular,
@@ -2138,7 +2147,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'reporte_causas_'+new Date().toISOString().slice(0,10)+'.csv';
+    var hoyLocal = new Date();
+    a.download = 'reporte_causas_'+hoyLocal.getFullYear()+'-'+('0'+(hoyLocal.getMonth()+1)).slice(-2)+'-'+('0'+hoyLocal.getDate()).slice(-2)+'.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -3181,9 +3191,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         confirmarAccion('¿Eliminar esta causa duplicada? No se puede deshacer.', {peligro:true, textoOk:'Eliminar'}).then(function(ok){
           if(!ok) return;
           llamarServicio({accion:'eliminarFila', idFila: btn.dataset.id}).then(function(){
-            return llamarServicio({accion:'listar'});
-          }).then(function(datos){
-            estado.causas = datos.causas;
+            estado.causas = estado.causas.filter(function(c){ return String(c.idFila)!==String(btn.dataset.id); });
             refrescarVistasDerivadas();
             mostrarToast('Causa duplicada eliminada.', 'exito');
           }).catch(mostrarErrorGlobal);
@@ -3317,8 +3325,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   function guardarEstadoInline(sel, idFila, nuevoValor, valorAnterior){
     sel.disabled = true;
     llamarServicio({accion:'actualizarCausa', idFila: idFila, cambios:{estado: nuevoValor}}).then(function(){
-      var causa = estado.causas.find(function(c){return String(c.idFila)===String(idFila);});
-      if(causa){ causa.estado = nuevoValor; causa.actualizadoEn = new Date(); }
+      aplicarCambiosLocales(idFila, {estado: nuevoValor}); // incluye el arrastre de acumuladas si pasa a "En Tabla"
       sel.dataset.valorAnterior = nuevoValor;
       sel.className = 'sel-inline sel-estado ' + (CLASE_CHIP_ESTADO[nuevoValor] || 'chip-tramite');
       refrescarVistasDerivadas();
@@ -3460,9 +3467,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       estado: estadoElegido
     };
     llamarServicio({accion:'actualizarCausa', idFila: idFila, cambios: cambios}).then(function(){
-      return llamarServicio({accion:'listar'});
-    }).then(function(datos){
-      estado.causas = datos.causas;
+      aplicarCambiosLocales(idFila, cambios);
       refrescarVistasDerivadas();
       cerrarModalEditar();
     }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; btn.textContent='Guardar cambios'; });
@@ -3578,12 +3583,9 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
           {textoOk:'Sí, desacumular'}
         ).then(function(ok){
           if(!ok) return;
-          llamarServicio({accion:'actualizarCausa', idFila: btn.dataset.id, cambios:{
-            acumulada:false, causaBaseId:'', causaBaseRol:'', causaBaseAnio:''
-          }}).then(function(){
-            return llamarServicio({accion:'listar'});
-          }).then(function(datos){
-            estado.causas = datos.causas;
+          var cambiosDesacumular = { acumulada:false, causaBaseId:'', causaBaseRol:'', causaBaseAnio:'' };
+          llamarServicio({accion:'actualizarCausa', idFila: btn.dataset.id, cambios: cambiosDesacumular}).then(function(){
+            aplicarCambiosLocales(btn.dataset.id, cambiosDesacumular);
             refrescarVistasDerivadas();
             renderListaAcumuladaModal();
             mostrarToast('Causa desacumulada.', 'exito');
@@ -3607,12 +3609,9 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     ).then(function(ok){
       if(!ok) return;
       btn.disabled = true; btn.textContent = 'Guardando...';
-      llamarServicio({accion:'actualizarCausa', idFila: causa.idFila, cambios:{
-        acumulada:true, causaBaseId: baseAcumulada.idFila, causaBaseRol: baseAcumulada.rol, causaBaseAnio: baseAcumulada.anio
-      }}).then(function(){
-        return llamarServicio({accion:'listar'});
-      }).then(function(datos){
-        estado.causas = datos.causas;
+      var cambiosAcumular = { acumulada:true, causaBaseId: baseAcumulada.idFila, causaBaseRol: baseAcumulada.rol, causaBaseAnio: baseAcumulada.anio };
+      llamarServicio({accion:'actualizarCausa', idFila: causa.idFila, cambios: cambiosAcumular}).then(function(){
+        aplicarCambiosLocales(causa.idFila, cambiosAcumular);
         refrescarVistasDerivadas();
         renderListaAcumuladaModal();
         document.getElementById('acumRol').value = '';
@@ -3704,11 +3703,12 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         var msj = 'Actualizadas '+datos.actualizadas+' causa(s) a estado "En Tabla".';
         if(datos.arrastradas) msj += ' (+'+datos.arrastradas+' acumulada(s) arrastrada(s) junto a su causa base).';
         mostrarToast(msj, 'exito');
+        conArrastreDeAcumuladas(ids).forEach(function(id){
+          var c = estado.causas.find(function(x){ return String(x.idFila)===String(id); });
+          if(c){ c.estado = 'En Tabla'; c.actualizadoEn = new Date(); }
+        });
         estado.seleccionStaging = {};
         renderBarraStaging();
-        return llamarServicio({accion:'listar'});
-      }).then(function(datos){
-        estado.causas = datos.causas;
         refrescarVistasDerivadas();
       }).catch(mostrarErrorGlobal).finally(function(){ btnOrigen.disabled=false; btnOrigen.textContent='Confirmar y marcar "En Tabla"'; });
     });
