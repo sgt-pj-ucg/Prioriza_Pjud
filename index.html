@@ -335,6 +335,9 @@ tr.fila-seleccionada td{background:#fff3f7!important;}
 .chip-marca[data-marca="rija"]{--clr:var(--rojo);}
 .chip-marca[data-marca="acumulada"]{--clr:var(--cian);}
 .chip-marca[data-marca="pesca"]{--clr:var(--azul-medio);}
+.chip-marca[data-marca="hecho"]{--clr:var(--ambar);}
+.badge-hecho{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;
+  background:#FFF1DB;color:#9A5B00;border:1px solid #F0C98A;white-space:nowrap;}
 .chip-count{font-weight:700;font-variant-numeric:tabular-nums;}
 
 /* -------- mini panel: cantidad de causas visibles según filtro activo -------- */
@@ -738,6 +741,8 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
           <input type="month" class="filtro" id="filtroRelacionHasta">
           <button class="btn btn-secundario" id="btnDuplicados"></button>
           <button class="btn btn-secundario" id="btnActualizarMaterias"><svg class="icono-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l1.93-1.93a5 5 0 0 0-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 0 0-7.07 0L5 12.93a5 5 0 0 0 7.07 7.07l1.43-1.43"/></svg> Actualizar materias desde Stock</button>
+          <button class="btn btn-secundario" id="btnCargarRecursosHecho" title="Sube el inventario (hoja 'inventario causas') y marca las causas con recurso de hecho"><svg class="icono-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7h14M7 7l-3 7a3 3 0 0 0 6 0L7 7zM17 7l-3 7a3 3 0 0 0 6 0l-3-7z"/></svg> Marcar recursos de hecho</button>
+          <input type="file" id="archivoRecursosHecho" accept=".xlsx,.xls,.xlsm" class="oculto">
           <button class="btn btn-secundario" id="btnLimpiarFiltrosStock">Limpiar</button>
         </div>
         <div class="fila-filtros-rapidos">
@@ -771,6 +776,7 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
               <button type="button" class="chip-marca" data-marca="rija">⚑ RIJA <span class="chip-count"></span></button>
               <button type="button" class="chip-marca" data-marca="acumulada">⛓ Acumuladas <span class="chip-count"></span></button>
               <button type="button" class="chip-marca" data-marca="pesca" title="Materia: Pesca y Acuicultura">🐟 Pesca <span class="chip-count"></span></button>
+              <button type="button" class="chip-marca" data-marca="hecho" title="Causas con recurso de hecho (según inventario)">⚖ Hecho <span class="chip-count"></span></button>
             </div>
           </div>
         </div>
@@ -782,11 +788,11 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
             <colgroup>
               <col style="width:34px"><col style="width:52px"><col style="width:52px"><col style="width:170px">
               <col style="width:239px"><col style="width:50px"><col style="width:145px">
-              <col style="width:140px"><col style="width:48px"><col style="width:92px"><col style="width:150px"><col style="width:115px">
+              <col style="width:140px"><col style="width:48px"><col style="width:92px"><col style="width:74px"><col style="width:150px"><col style="width:115px">
               <col style="width:100px"><col style="width:100px"><col style="width:80px">
             </colgroup>
             <thead><tr><th></th><th>ROL</th><th>AÑO</th><th>LIBRO</th><th>MATERIA</th><th>TIPO</th><th>COMPLEJIDAD</th>
-              <th>ESTADO</th><th>RIJA</th><th>ACUM.</th><th>SUSPENSIÓN</th><th>DÍAS PARA REANUDAR</th>
+              <th>ESTADO</th><th>RIJA</th><th>ACUM.</th><th>REC. HECHO</th><th>SUSPENSIÓN</th><th>DÍAS PARA REANUDAR</th>
               <th>FECHA INGRESO</th><th>FECHA RELACIÓN</th><th class="col-acciones"></th></tr></thead>
             <tbody></tbody>
           </table>
@@ -1366,7 +1372,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   var PUNTAJES_LIBRO_DEFECTO = [300, 200, 100, 50, 25];
   var CAMPOS_CAUSA = ['rol','anio','libro','fechaIngreso','observacion','fechaRelacion','materia',
     'complejidad','tipo','estado','rija','fechaSuspension','diasSuspension','comentarios',
-    'acumulada','causaBaseId','causaBaseRol','causaBaseAnio'];
+    'acumulada','causaBaseId','causaBaseRol','causaBaseAnio','recursoHecho'];
 
   function claveCruce(rol, anio, libro){
     return String(rol||'')+'|'+String(anio||'')+'|'+String(libro||'').trim().toUpperCase();
@@ -1418,6 +1424,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         case 'reemplazarBaseDatos': return accionReemplazarBaseDatos(cuerpo.filas||[], cuerpo.confirmar);
         case 'cargarStock': return accionCargarStock(cuerpo.filas||[]);
         case 'actualizarMaterias': return accionActualizarMaterias();
+        case 'marcarRecursosHecho': return accionMarcarRecursosHecho(cuerpo.claves||[]);
         case 'generarRanking': return accionGenerarRanking();
         case 'guardarConfig': return accionGuardarConfig(cuerpo.prioridad||[]);
         case 'confirmarTabla': return accionConfirmarTabla(cuerpo.idsFila||[]);
@@ -1696,6 +1703,39 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     return partes.length ? partes.join('; ') : 'Datos actualizados';
   }
 
+  /** Marca/desmarca "recurso de hecho" según el inventario: `claves` son las ROL|AÑO|LIBRO
+   *  (claveCruce) que en TIPO RECURSO dicen "hecho". Las del stock que están en la lista
+   *  quedan marcadas y las demás desmarcadas; solo se escriben las que cambian, y cada
+   *  cambio queda en el historial. No toca ningún otro dato de la causa. */
+  function accionMarcarRecursosHecho(claves){
+    var set = {};
+    claves.forEach(function(k){ set[k] = true; });
+    var aMarcar = [], aDesmarcar = [];
+    estado.causas.forEach(function(c){
+      var debe = !!set[claveCruce(c.rol, c.anio, c.libro)];
+      var tiene = !!c.recursoHecho;
+      if(debe && !tiene) aMarcar.push(c);
+      else if(!debe && tiene) aDesmarcar.push(c);
+    });
+    var ahora = firebase.firestore.FieldValue.serverTimestamp();
+    var cambios = aMarcar.map(function(c){ return {c:c, marcar:true}; })
+      .concat(aDesmarcar.map(function(c){ return {c:c, marcar:false}; }));
+    return ejecutarEnLotes(cambios, function(batch, lote){
+      lote.forEach(function(x){
+        batch.update(db.collection('causas').doc(String(x.c.idFila)), {
+          recursoHecho: x.marcar ? true : firebase.firestore.FieldValue.delete(),
+          actualizadoEn: ahora
+        });
+      });
+    }).then(function(){
+      return Promise.all(cambios.map(function(x){
+        return registrarHistorial(x.c, x.marcar ? 'Recurso de hecho: marcado (desde inventario)' : 'Recurso de hecho: desmarcado (desde inventario)');
+      }));
+    }).then(function(){
+      return { ok:true, marcadas:aMarcar.length, desmarcadas:aDesmarcar.length };
+    });
+  }
+
   function accionConfirmarTabla(idsFila){
     var conArrastre = conArrastreDeAcumuladas(idsFila);
     var ahora = firebase.firestore.FieldValue.serverTimestamp();
@@ -1906,7 +1946,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   }
 
   function cargarTodo(){
-    mostrarEsqueletoTabla('#tablaStock tbody', 14, 8);
+    mostrarEsqueletoTabla('#tablaStock tbody', 16, 8);
     llamarServicio({accion:'listar'}).then(function(datos){
       estado.causas = datos.causas;
       estado.config = datos.config;
@@ -2794,6 +2834,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   var filtroRijaStock = false;
   var filtroAcumuladaStock = false;
   var filtroPescaStock = false;
+  var filtroHechoStock = false;
 
   /** `omitir` deja de aplicar UN filtro puntual ('estado'|'rija'|'acumulada') — lo usan
    *  los contadores de los chips para mostrar cuántas causas quedarían con ESE chip
@@ -2810,6 +2851,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(omitir!=='rija' && filtroRijaStock && String(c.rija||'').toUpperCase().indexOf('RIJA')<0) return false;
       if(omitir!=='acumulada' && filtroAcumuladaStock && !c.acumulada) return false;
       if(omitir!=='pesca' && filtroPescaStock && !esPesca(c)) return false;
+      if(omitir!=='hecho' && filtroHechoStock && !c.recursoHecho) return false;
       if(filtroLibro && String(c.libro||'').trim()!==filtroLibro) return false;
       if(relacionDesde || relacionHasta){
         var mesAnio = mesAnioDeFecha(c.fechaRelacion);
@@ -2922,8 +2964,9 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var conRija = causasFiltradas('rija').filter(function(c){ return String(c.rija||'').toUpperCase().indexOf('RIJA')>-1; }).length;
     var conAcum = causasFiltradas('acumulada').filter(function(c){ return c.acumulada; }).length;
     var conPesca = causasFiltradas('pesca').filter(esPesca).length;
-    var conteos = { rija:conRija, acumulada:conAcum, pesca:conPesca };
-    var activos = { rija:filtroRijaStock, acumulada:filtroAcumuladaStock, pesca:filtroPescaStock };
+    var conHecho = causasFiltradas('hecho').filter(function(c){ return c.recursoHecho; }).length;
+    var conteos = { rija:conRija, acumulada:conAcum, pesca:conPesca, hecho:conHecho };
+    var activos = { rija:filtroRijaStock, acumulada:filtroAcumuladaStock, pesca:filtroPescaStock, hecho:filtroHechoStock };
     cont.querySelectorAll('.chip-marca').forEach(function(btn){
       var marca = btn.dataset.marca;
       btn.classList.toggle('activo', activos[marca]);
@@ -2941,6 +2984,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         if(marca==='rija') filtroRijaStock = !filtroRijaStock;
         else if(marca==='acumulada') filtroAcumuladaStock = !filtroAcumuladaStock;
         else if(marca==='pesca') filtroPescaStock = !filtroPescaStock;
+        else if(marca==='hecho') filtroHechoStock = !filtroHechoStock;
         renderStock();
       });
     });
@@ -3028,11 +3072,12 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         '<td>'+(c.tipo||'')+'</td><td>'+construirSelectComplejidad(c)+'</td><td>'+construirSelectEstado(c)+'</td>'+
         '<td><input type="checkbox" class="chk-rija chkRija" data-id="'+c.idFila+'" '+(tieneRija?'checked':'')+'></td>'+
         '<td>'+celdaAcum+'</td>'+
+        '<td>'+(c.recursoHecho?'<span class="badge-hecho" title="Causa con recurso de hecho (según inventario)">Hecho</span>':'')+'</td>'+
         '<td class="celda-suspension" data-id="'+c.idFila+'">'+textoSuspension(c)+'</td>'+
         '<td class="celda-reanudar" data-id="'+c.idFila+'">'+textoDiasReanudar(c)+'</td>'+
         '<td>'+(c.fechaIngreso||'')+'</td><td>'+(c.fechaRelacion||'')+'</td>'+
         '<td class="celda-acciones">'+(esDup?'<button class="btn btn-peligro btnEliminarDup" data-id="'+c.idFila+'">Eliminar</button>':'')+'</td></tr>';
-    }).join('') || filaVacia(14, 'No encontramos causas con ese filtro', 'Prueba ajustando la búsqueda, el libro o el estado.');
+    }).join('') || filaVacia(16, 'No encontramos causas con ese filtro', 'Prueba ajustando la búsqueda, el libro o el estado.');
 
     tbody.querySelectorAll('.chkStock').forEach(function(chk){
       chk.addEventListener('click', function(e){ e.stopPropagation(); });
@@ -3152,6 +3197,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     filtroRijaStock=false;
     filtroAcumuladaStock=false;
     filtroPescaStock=false;
+    filtroHechoStock=false;
     soloDuplicados=false;
     document.getElementById('btnDuplicados').innerHTML = ICONOS.duplicado+' Ver duplicados';
     renderStock();
@@ -3169,6 +3215,59 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       return llamarServicio({accion:'listar'});
     }).then(function(datos){ estado.causas=datos.causas; refrescarVistasDerivadas(); })
     .catch(mostrarErrorGlobal).finally(function(){ btn.disabled=false; });
+  });
+
+  /* ================= RECURSO DE HECHO (desde el inventario de causas) ================= */
+  document.getElementById('btnCargarRecursosHecho').addEventListener('click', function(){
+    var inp = document.getElementById('archivoRecursosHecho');
+    inp.value = '';
+    inp.click();
+  });
+  document.getElementById('archivoRecursosHecho').addEventListener('change', function(){
+    var archivo = this.files[0];
+    if(!archivo) return;
+    var lector = new FileReader();
+    lector.onload = function(e){
+      var libroXls;
+      try{ libroXls = XLSX.read(new Uint8Array(e.target.result), {type:'array'}); }
+      catch(err){ mostrarToast('No se pudo leer el archivo. ¿Es un Excel válido (.xlsx/.xls)?', 'error'); return; }
+      var hoja = elegirHojaConColumnas(libroXls, ['ROL', ['TIPOLIBRO','LIBRO'], ['ANIO','ANO'], 'TIPORECURSO'], 'inventario');
+      if(!hoja){ mostrarToast('No se encontró una hoja con las columnas ROL, AÑO, LIBRO y TIPO RECURSO (se espera la hoja "inventario causas").', 'error'); return; }
+      var headers = hoja.filas[hoja.filaEncabezados].map(String);
+      var iRol = buscarColumnaExcel(headers,'ROL');
+      var iAnio = buscarColumnaExcel(headers,'ANIO'); if(iAnio<0) iAnio = buscarColumnaExcel(headers,'ANO');
+      var iLibro = buscarColumnaExcel(headers,'TIPOLIBRO'); if(iLibro<0) iLibro = buscarColumnaExcel(headers,'LIBRO');
+      var iRec = buscarColumnaExcel(headers,'TIPORECURSO');
+      var vistas = {}, claves = [];
+      for(var i=hoja.filaEncabezados+1; i<hoja.filas.length; i++){
+        var f = hoja.filas[i];
+        if(String(f[iRec]||'').toLowerCase().indexOf('hecho')<0) continue;
+        var k = claveCruce(String(f[iRol]||'').trim(), String(f[iAnio]||'').trim(), f[iLibro]);
+        if(!vistas[k]){ vistas[k] = true; claves.push(k); }
+      }
+      var enStock = 0, nuevas = 0, quitar = 0;
+      estado.causas.forEach(function(c){
+        var debe = !!vistas[claveCruce(c.rol, c.anio, c.libro)];
+        if(debe) enStock++;
+        if(debe && !c.recursoHecho) nuevas++;
+        if(!debe && c.recursoHecho) quitar++;
+      });
+      confirmarAccion(
+        'Hoja "'+hoja.nombreHoja+'": '+claves.length+' recurso(s) de hecho en el inventario. '+enStock+' corresponden a causas del Stock actual'+
+        ' ('+nuevas+' se marcarán ahora'+(quitar?', '+quitar+' ya marcadas que no figuran se desmarcarán':'')+'). '+
+        (claves.length-enStock)+' no están en el Stock y no se cargan. No se modifica ningún otro dato.',
+        {titulo:'Marcar recursos de hecho', textoOk:'Sí, marcar'}
+      ).then(function(ok){
+        if(!ok) return;
+        var btn = document.getElementById('btnCargarRecursosHecho'); btn.disabled = true;
+        return llamarServicio({accion:'marcarRecursosHecho', claves: claves}).then(function(datos){
+          mostrarToast('Recurso de hecho: '+datos.marcadas+' marcada(s)'+(datos.desmarcadas?', '+datos.desmarcadas+' desmarcada(s)':'')+'.', 'exito');
+          return llamarServicio({accion:'listar'});
+        }).then(function(datos){ estado.causas = datos.causas; refrescarVistasDerivadas(); })
+        .catch(mostrarErrorGlobal).finally(function(){ btn.disabled = false; });
+      });
+    };
+    lector.readAsArrayBuffer(archivo);
   });
 
   /* ================= EDICIÓN RÁPIDA DE ESTADO (inline) ================= */
