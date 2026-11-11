@@ -191,6 +191,27 @@ input.buscador{min-width:220px;flex:1;width:100%;}
 .chip-filtro span.x{cursor:pointer;font-weight:700;}
 .contador-resultados{color:var(--texto-suave);font-size:12px;margin:0 0 var(--e2);}
 
+
+/* -------- Control de Tabla -------- */
+.subtabs-tabla{display:flex;gap:8px;margin:var(--e3) 0;flex-wrap:wrap;}
+.barra-vista-sala{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--azul-claro);border:1px solid #cddcec;
+  border-radius:10px;padding:10px 14px;margin-bottom:var(--e3);}
+.barra-vista-sala label{font-size:12.5px;font-weight:600;color:var(--azul-profundo);display:flex;align-items:center;gap:8px;}
+.barra-vista-sala .sel-cont{font-weight:700;color:var(--azul-profundo);font-size:13px;margin-right:auto;}
+.inp-fecha-tabla{padding:5px 8px;border:1px solid var(--borde);border-radius:8px;font-size:12.5px;background:var(--superficie);color:var(--texto);}
+.inp-fecha-tabla:focus{outline:2px solid rgba(29,78,126,.35);}
+.dias-tabla{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:#F0F2F5;color:var(--texto-suave);white-space:nowrap;}
+.dias-tabla.dias-ok{background:#E3F4EA;color:#17704A;}
+.dias-tabla.dias-medio{background:#FFF1DB;color:#9A5B00;}
+.dias-tabla.dias-alto{background:#FDE3D2;color:#A24A0A;}
+.dias-tabla.dias-critico{background:#FBE6E3;color:#A32A1E;}
+.titulo-bloque-tabla{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--azul-profundo);margin:var(--e4) 0 var(--e2);padding-bottom:6px;border-bottom:1px solid var(--borde);}
+.caja-ind-tabla{border:1px solid var(--borde);border-radius:10px;padding:var(--e3);background:var(--superficie);}
+.caja-ind-tabla h3{margin:0 0 var(--e2);font-size:13px;color:var(--azul-profundo);}
+.caja-ind-tabla table{width:100%;font-size:12.5px;}
+.caja-ind-tabla td,.caja-ind-tabla th{padding:6px 8px;text-align:right;}
+.caja-ind-tabla td:first-child,.caja-ind-tabla th:first-child{text-align:left;}
+
 /* -------- Informe Mensual (resumen ejecutivo para jefatura) -------- */
 :root{ --informe-teal:#1D8A9E; }
 .informe-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--e3);
@@ -336,6 +357,7 @@ tr.fila-seleccionada td{background:#fff3f7!important;}
 .chip-marca[data-marca="acumulada"]{--clr:var(--cian);}
 .chip-marca[data-marca="pesca"]{--clr:var(--azul-medio);}
 .chip-marca[data-marca="hecho"]{--clr:var(--ambar);}
+.chip-marca[data-marca="sala"]{--clr:#1D8A9E;}
 .badge-hecho{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;
   background:#FFF1DB;color:#9A5B00;border:1px solid #F0C98A;white-space:nowrap;}
 .chip-count{font-weight:700;font-variant-numeric:tabular-nums;}
@@ -669,15 +691,16 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
   </header>
 
   <nav class="etapas">
-    <button data-vista="stock" class="activa"><span class="badge">1</span> Stock de Causas</button>
-    <button data-vista="ranking"><span class="badge">2</span> Índice de Prioridad</button>
-    <button data-vista="traspaso"><span class="badge">3</span> Traspaso SITCORTE</button>
-    <button data-vista="dashboard"><span class="badge">4</span> Dashboard</button>
-    <button data-vista="inicio"><span class="badge">5</span> Reportes</button>
-    <button data-vista="config"><span class="badge">6</span> Configuración Prioridad</button>
-    <button data-vista="ingesta"><span class="badge">7</span> Ingresos</button>
-    <button data-vista="informe"><span class="badge">8</span> Informe Mensual</button>
-    <button data-vista="historial"><span class="badge">9</span> Última actualización</button>
+    <button data-vista="dashboard" class="activa"><span class="badge">1</span> Dashboard</button>
+    <button data-vista="stock"><span class="badge">2</span> Stock de Causas</button>
+    <button data-vista="ranking"><span class="badge">3</span> Índice de Prioridad</button>
+    <button data-vista="traspaso"><span class="badge">4</span> Traspaso SITCORTE</button>
+    <button data-vista="tabla"><span class="badge">5</span> Control de Tabla</button>
+    <button data-vista="inicio"><span class="badge">6</span> Reportes</button>
+    <button data-vista="config"><span class="badge">7</span> Configuración Prioridad</button>
+    <button data-vista="ingesta"><span class="badge">8</span> Ingresos</button>
+    <button data-vista="informe"><span class="badge">9</span> Informe Mensual</button>
+    <button data-vista="historial"><span class="badge">10</span> Última actualización</button>
   </nav>
 
   <main>
@@ -794,6 +817,7 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
               <button type="button" class="chip-marca" data-marca="acumulada">⛓ Acumuladas <span class="chip-count"></span></button>
               <button type="button" class="chip-marca" data-marca="pesca" title="Materia: Pesca y Acuicultura">🐟 Pesca <span class="chip-count"></span></button>
               <button type="button" class="chip-marca" data-marca="hecho" title="Causas con recurso de hecho (según inventario)">⚖ Hecho <span class="chip-count"></span></button>
+              <button type="button" class="chip-marca" data-marca="sala" title="En tabla, pendientes de ser vistas en Sala">🏛 Pend. Sala <span class="chip-count"></span></button>
             </div>
           </div>
         </div>
@@ -1046,6 +1070,75 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
                 <p>Unidad de Causas y Salas · Iltma. Corte de Apelaciones de La Serena</p>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CONTROL DE TABLA ===== -->
+    <section id="vista-tabla" class="oculto">
+      <div class="tarjeta">
+        <div class="dash-header">
+          <div>
+            <h2>Control de causas en tabla</h2>
+            <p class="subt" style="margin:0;">La fecha en que una causa se pone en tabla se anota sola al confirmar el Traspaso. Aquí registras la fecha en que fue <b>vista en Sala</b> y se miden los días de espera. Las acumuladas se ven junto a su causa base y no se cuentan aparte.</p>
+          </div>
+        </div>
+        <div class="grid-kpi" id="kpisTabla"></div>
+        <div class="subtabs-tabla">
+          <button type="button" class="chip-anio activo" id="btnSubGestion">Gestión</button>
+          <button type="button" class="chip-anio" id="btnSubIndicadores">Indicadores</button>
+        </div>
+
+        <div id="panelTablaGestion">
+          <div class="fila-acciones">
+            <div class="buscador-cont">
+              <input class="buscador" id="buscadorTabla" placeholder="Buscar por ROL, AÑO, LIBRO, MATERIA...">
+              <button type="button" class="btn-limpiar-buscador" id="btnLimpiarBuscadorTabla" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">×</button>
+            </div>
+            <select class="filtro" id="filtroLibroTabla"><option value="">Todos los libros</option></select>
+            <div class="chips-anios" id="chipsSalaTabla">
+              <button type="button" class="chip-anio activo" data-sala="pendientes">Pendientes de Sala <span class="chip-count"></span></button>
+              <button type="button" class="chip-anio" data-sala="vistas">Vistas en Sala <span class="chip-count"></span></button>
+              <button type="button" class="chip-anio" data-sala="todas">Todas <span class="chip-count"></span></button>
+            </div>
+          </div>
+          <div class="barra-vista-sala">
+            <span class="sel-cont" id="contadorSelTabla">0 seleccionada(s)</span>
+            <label>Fecha vista en Sala <input type="date" class="inp-fecha-tabla" id="fechaVistaMasiva"></label>
+            <button class="btn btn-primario" id="btnRegistrarVistas">Registrar vista en Sala</button>
+            <button class="btn btn-secundario" id="btnDevolverDisponible">Volver a Disponible</button>
+          </div>
+          <div class="fila-contador-stock"><span class="contador-stock" id="contadorTabla">0 causa(s)</span></div>
+          <div class="contenedor-tabla">
+            <table class="datos" id="tablaControlTabla">
+              <thead><tr><th style="width:34px;"><input type="checkbox" id="chkTodasTabla" title="Seleccionar todas las visibles"></th>
+                <th>ROL</th><th>AÑO</th><th>LIBRO</th><th>MATERIA</th><th>FECHA EN TABLA</th><th>DÍAS EN TABLA</th><th>FECHA VISTA EN SALA</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="panelTablaIndicadores" class="oculto">
+          <p class="titulo-bloque-tabla" style="margin-top:0;">Causas vistas en Sala</p>
+          <div class="grid-kpi" id="periodosTabla"></div>
+          <div class="grid-dash-charts">
+            <div class="caja-ind-tabla"><h3>Vistas por día (últimos 30 días)</h3><div class="dash-chart-cont"><canvas id="chartTablaDia"></canvas></div></div>
+            <div class="caja-ind-tabla"><h3>Vistas por mes (últimos 12 meses)</h3><div class="dash-chart-cont"><canvas id="chartTablaMes"></canvas></div></div>
+          </div>
+          <div class="grid-dash-charts">
+            <div class="caja-ind-tabla"><h3>Vistas por trimestre y año (calendario)</h3>
+              <table class="datos"><thead><tr><th>Año</th><th>T1</th><th>T2</th><th>T3</th><th>T4</th><th>Total</th></tr></thead><tbody id="tbodyTrimAnual"></tbody></table></div>
+            <div class="caja-ind-tabla"><h3>Antigüedad de las pendientes de Sala</h3>
+              <table class="datos"><thead><tr><th>Días en tabla</th><th>Causas</th></tr></thead><tbody id="tbodyAntiguedadTabla"></tbody></table></div>
+          </div>
+          <p class="titulo-bloque-tabla">Días desde la puesta en tabla hasta ser vista en Sala</p>
+          <div class="grid-kpi" id="statsEsperaTabla"></div>
+          <div class="grid-dash-charts">
+            <div class="caja-ind-tabla"><h3>Por mes en que fue vista</h3>
+              <table class="datos"><thead><tr><th>Mes</th><th>Vistas</th><th>Promedio (días)</th><th>Máximo</th></tr></thead><tbody id="tbodyEsperaMes"></tbody></table></div>
+            <div class="caja-ind-tabla"><h3>Por libro</h3>
+              <table class="datos"><thead><tr><th>Libro</th><th>Pendientes</th><th>Vistas</th><th>Promedio (días)</th><th>Máximo</th></tr></thead><tbody id="tbodyEsperaLibro"></tbody></table></div>
           </div>
         </div>
       </div>
@@ -1318,18 +1411,20 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     ingesta: '<svg class="icono-tarjeta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>',
     traspaso: '<svg class="icono-tarjeta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M6 17v4h12v-4"/></svg>',
     dashboard: '<svg class="icono-tarjeta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0-8-8"/><path d="M12 20a8 8 0 0 0 8-8"/><path d="M12 12l5-5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>',
+    tabla: '<svg class="icono-tarjeta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><path d="m9 15 2 2 4-4"/></svg>',
     informe: '<svg class="icono-tarjeta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l4 4v14H4V3z"/><path d="M16 3v4h4"/><path d="M8 13h3M8 17h8M13 13h3"/></svg>'
   };
 
   var ETAPAS = [
-    { vista:'stock', numero:1, titulo:'Stock de Causas', desc:'Ver el listado completo, filtrar por estado y resolver duplicados.' },
-    { vista:'ranking', numero:2, titulo:'Índice de Prioridad', desc:'Calcular la prioridad de las causas disponibles según los criterios definidos.' },
-    { vista:'traspaso', numero:3, titulo:'Traspaso SITCORTE', desc:'Reunir las causas elegidas (desde el Índice de Prioridad o Stock) para revisar, imprimir y traspasar a SITCORTE.' },
-    { vista:'dashboard', numero:4, titulo:'Dashboard', desc:'Avance y cumplimiento en indicadores interactivos, actualizados al instante.' },
-    { vista:'inicio', numero:5, titulo:'Reportes', desc:'Pendientes y gestionadas, desglosadas por materia y por tipo.' },
-    { vista:'config', numero:6, titulo:'Configuración Prioridad', desc:'Definir la prioridad de LIBRO y la conexión al servicio de datos.' },
-    { vista:'ingesta', numero:7, titulo:'Ingresos', desc:'Cargar causas nuevas y actualizar el listado de referencia (Stock) para la materia.' },
-    { vista:'informe', numero:8, titulo:'Informe Mensual', desc:'Resumen ejecutivo del stock en relación para tabla, listo para presentar a jefatura.' }
+    { vista:'dashboard', numero:1, titulo:'Dashboard', desc:'Avance y cumplimiento en indicadores interactivos, actualizados al instante.' },
+    { vista:'stock', numero:2, titulo:'Stock de Causas', desc:'Ver el listado completo, filtrar por estado y resolver duplicados.' },
+    { vista:'ranking', numero:3, titulo:'Índice de Prioridad', desc:'Calcular la prioridad de las causas disponibles según los criterios definidos.' },
+    { vista:'traspaso', numero:4, titulo:'Traspaso SITCORTE', desc:'Reunir las causas elegidas (desde el Índice de Prioridad o Stock) para revisar, imprimir y traspasar a SITCORTE.' },
+    { vista:'tabla', numero:5, titulo:'Control de Tabla', desc:'Seguir las causas puestas en tabla: fecha en que fueron vistas en Sala, días de espera e indicadores.' },
+    { vista:'inicio', numero:6, titulo:'Reportes', desc:'Pendientes y gestionadas, desglosadas por materia y por tipo.' },
+    { vista:'config', numero:7, titulo:'Configuración Prioridad', desc:'Definir la prioridad de LIBRO y la conexión al servicio de datos.' },
+    { vista:'ingesta', numero:8, titulo:'Ingresos', desc:'Cargar causas nuevas y actualizar el listado de referencia (Stock) para la materia.' },
+    { vista:'informe', numero:9, titulo:'Informe Mensual', desc:'Resumen ejecutivo del stock en relación para tabla, listo para presentar a jefatura.' }
   ];
 
   /* ================= FIREBASE (backend) ================= */
@@ -1361,7 +1456,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   var PUNTAJES_LIBRO_DEFECTO = [300, 200, 100, 50, 25];
   var CAMPOS_CAUSA = ['rol','anio','libro','fechaIngreso','observacion','fechaRelacion','materia',
     'complejidad','tipo','estado','rija','fechaSuspension','diasSuspension','comentarios',
-    'acumulada','causaBaseId','causaBaseRol','causaBaseAnio','recursoHecho'];
+    'acumulada','causaBaseId','causaBaseRol','causaBaseAnio','recursoHecho','fechaEnTabla','fechaVista'];
 
   /** El LIBRO llega con distinta escritura según la planilla ("Civil", "CIVIL", "Laboral - Cobranza",
    *  "LABORAL - COBRANZA"): todo cruce por libro (prioridad del Índice, filtros, agrupaciones) debe
@@ -1425,6 +1520,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         case 'cargarStock': return accionCargarStock(cuerpo.filas||[]);
         case 'actualizarMaterias': return accionActualizarMaterias();
         case 'marcarRecursosHecho': return accionMarcarRecursosHecho(cuerpo.claves||[]);
+        case 'registrarVistaSala': return accionRegistrarVistaSala(cuerpo.idsFila||[], cuerpo.fecha);
+        case 'devolverADisponible': return accionDevolverADisponible(cuerpo.idsFila||[]);
         case 'generarRanking': return accionGenerarRanking();
         case 'guardarConfig': return accionGuardarConfig(cuerpo.prioridad||[]);
         case 'confirmarTabla': return accionConfirmarTabla(cuerpo.idsFila||[]);
@@ -1679,8 +1776,26 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       return String(x==null?'':x).trim()===String(y==null?'':y).trim();
     };
     var partes = [];
-    if('estado' in cambios && !igual(antes.estado||'Disponible', cambios.estado))
-      partes.push('Estado: '+(antes.estado||'—')+' → '+cambios.estado);
+    var idxEstado = -1;
+    if('estado' in cambios && !igual(antes.estado||'Disponible', cambios.estado)){
+      partes.push('Estado: '+(antes.estado||'—')+' → '+cambios.estado
+        +(cambios.estado==='En Tabla' && cambios.fechaEnTabla ? ' (puesta en tabla el '+cambios.fechaEnTabla+')' : ''));
+      idxEstado = partes.length-1;
+    }
+    if('fechaEnTabla' in cambios && !igual(antes.fechaEnTabla, cambios.fechaEnTabla)){
+      if(!cambios.fechaEnTabla && antes.fechaEnTabla)
+        partes.push('Se anuló su paso por tabla (en tabla desde el '+antes.fechaEnTabla+(antes.fechaVista ? ', vista en Sala el '+antes.fechaVista : '')+')');
+      else if(idxEstado<0)
+        partes.push('Fecha en tabla corregida: '+(antes.fechaEnTabla||'—')+' → '+(cambios.fechaEnTabla||'—'));
+    }
+    if('fechaVista' in cambios && !igual(antes.fechaVista, cambios.fechaVista) && !('fechaEnTabla' in cambios && !cambios.fechaEnTabla)){
+      var fEnT = 'fechaEnTabla' in cambios ? cambios.fechaEnTabla : antes.fechaEnTabla;
+      if(!antes.fechaVista && cambios.fechaVista){
+        var d = diasEntre(fEnT, cambios.fechaVista);
+        partes.push('Vista en Sala el '+cambios.fechaVista+(d!==null ? ' ('+d+' día(s) desde su puesta en tabla)' : ''));
+      } else if(antes.fechaVista && !cambios.fechaVista) partes.push('Se quitó la fecha de vista en Sala (era '+antes.fechaVista+')');
+      else partes.push('Fecha de vista en Sala corregida: '+antes.fechaVista+' → '+cambios.fechaVista);
+    }
     if('rija' in cambios){
       var tenia = String(antes.rija||'').toUpperCase().indexOf('RIJA')>-1;
       var tiene = String(cambios.rija||'').toUpperCase().indexOf('RIJA')>-1;
@@ -1740,66 +1855,167 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     });
   }
 
-  function accionConfirmarTabla(idsFila){
-    var conArrastre = conArrastreDeAcumuladas(idsFila);
-    var ahora = firebase.firestore.FieldValue.serverTimestamp();
-    var directas = {};
-    idsFila.forEach(function(id){ directas[id] = true; });
-    return ejecutarEnLotes(conArrastre, function(batch, lote){
-      lote.forEach(function(idFila){ batch.update(db.collection('causas').doc(String(idFila)), {estado:'En Tabla', actualizadoEn: ahora}); });
-    }).then(function(){
-      return Promise.all(conArrastre.map(function(id){
-        var antes = estado.causas.find(function(c){ return String(c.idFila)===String(id); });
-        var desc = directas[id] ? 'Pasó a Tabla (Traspaso SITCORTE)' : 'Pasó a Tabla (arrastrada por acumulación)';
-        return registrarHistorial(antes || {idFila:id}, desc);
-      }));
-    }).then(function(){ return { ok:true, actualizadas: idsFila.length, arrastradas: conArrastre.length-idsFila.length }; });
+  /* ---------------- control de causas en tabla: fechas ---------------- */
+  function hoyDDMMYYYY(){
+    var d = new Date();
+    return ('0'+d.getDate()).slice(-2)+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+d.getFullYear();
   }
+  /** Días corridos entre dos fechas dd-mm-aaaa (negativo si la segunda es anterior); null si falta alguna. */
+  function diasEntre(fechaIni, fechaFin){
+    var a = parsearFechaLocal(fechaIni), b = parsearFechaLocal(fechaFin);
+    if(!a || !b) return null;
+    return Math.round((b.getTime()-a.getTime())/86400000);
+  }
+  function errorValidacion(msg){ var e = new Error(msg); e.validacion = true; return e; }
+  function buscarCausaLocal(id){ return estado.causas.find(function(c){ return String(c.idFila)===String(id); }); }
 
-  /** Refleja en la copia en memoria lo que acaba de guardarse en Firestore, en vez de volver
-   *  a descargar las ~2.900 causas tras cada acción (ahorra lecturas de la cuota diaria y
-   *  evita esperas de varios segundos). Replica la regla de accionActualizarCausa: una causa
-   *  base que pasa a "En Tabla" arrastra a sus acumuladas. */
-  function aplicarCambiosLocales(idFila, cambios){
+  /** Refleja en la copia en memoria lo que acaba de guardarse en Firestore (la acción devuelve
+   *  los "parches" exactos que escribió, incluidas las acumuladas arrastradas), en vez de volver
+   *  a descargar las ~2.900 causas tras cada acción. */
+  function aplicarParches(parches){
     var ahora = new Date();
-    var ids = [String(idFila)];
-    if(cambios && cambios.estado === 'En Tabla') ids = ids.concat(idsAcumuladasDe(idFila).map(String));
-    ids.forEach(function(id, i){
-      var c = estado.causas.find(function(x){ return String(x.idFila)===id; });
+    (parches||[]).forEach(function(p){
+      var c = buscarCausaLocal(p.idFila);
       if(!c) return;
-      if(i===0) Object.keys(cambios).forEach(function(k){ c[k] = cambios[k]; });
-      else c.estado = 'En Tabla';
+      Object.keys(p.cambios).forEach(function(k){ c[k] = p.cambios[k]; });
       c.actualizadoEn = ahora;
     });
   }
 
+  /** Escribe un conjunto de parches {idFila, cambios} en lotes y deja cada uno en el historial. */
+  function escribirParches(parches, descripciones){
+    var ahora = firebase.firestore.FieldValue.serverTimestamp();
+    return ejecutarEnLotes(parches, function(batch, lote){
+      lote.forEach(function(p){
+        batch.update(db.collection('causas').doc(String(p.idFila)), Object.assign({}, p.cambios, { actualizadoEn: ahora }));
+      });
+    }).then(function(){
+      return Promise.all(parches.map(function(p, i){
+        var antes = buscarCausaLocal(p.idFila);
+        return registrarHistorial(antes || {idFila:p.idFila}, descripciones[i]);
+      }));
+    });
+  }
+
+  /** Traspaso SITCORTE: pasa a "En Tabla" las causas elegidas (y sus acumuladas) y anota
+   *  AUTOMÁTICAMENTE la fecha de puesta en tabla. La fecha de vista en Sala se ingresa después. */
+  function accionConfirmarTabla(idsFila){
+    var hoy = hoyDDMMYYYY();
+    var directas = {};
+    idsFila.forEach(function(id){ directas[id] = true; });
+    var parches = [], descripciones = [];
+    conArrastreDeAcumuladas(idsFila).forEach(function(id){
+      var c = buscarCausaLocal(id);
+      if(!c || c.estado==='En Tabla') return; // ya estaba en tabla: se conserva su fecha original
+      parches.push({ idFila:id, cambios:{ estado:'En Tabla', fechaEnTabla:hoy, fechaVista:'' } });
+      descripciones.push((directas[id] ? 'Pasó a Tabla (Traspaso SITCORTE)' : 'Pasó a Tabla (arrastrada por acumulación)')+' · puesta en tabla el '+hoy);
+    });
+    return escribirParches(parches, descripciones).then(function(){
+      var directasCambiadas = parches.filter(function(p){ return directas[p.idFila]; }).length;
+      return { ok:true, actualizadas: directasCambiadas, arrastradas: parches.length-directasCambiadas, parches: parches };
+    });
+  }
+
+  /** Registra la fecha en que Sala vio las causas (una misma fecha para varias a la vez). Una
+   *  causa base arrastra a sus acumuladas. Se omiten las que ya tienen fecha de vista o cuya
+   *  puesta en tabla es posterior a la fecha indicada. */
+  function accionRegistrarVistaSala(idsFila, fecha){
+    if(!parsearFechaLocal(fecha)) return Promise.reject(errorValidacion('Indica una fecha válida.'));
+    if(diasEntre(hoyDDMMYYYY(), fecha) > 0) return Promise.reject(errorValidacion('La fecha de vista en Sala no puede ser futura.'));
+    var parches = [], descripciones = [], omitidas = 0;
+    idsFila.forEach(function(id){
+      var c = buscarCausaLocal(id);
+      if(!c || c.estado!=='En Tabla' || c.fechaVista){ omitidas++; return; }
+      if(c.fechaEnTabla && diasEntre(c.fechaEnTabla, fecha) < 0){ omitidas++; return; }
+      var dias = diasEntre(c.fechaEnTabla, fecha);
+      var txt = 'Vista en Sala el '+fecha+(dias!==null ? ' ('+dias+' día(s) desde su puesta en tabla)' : '');
+      parches.push({ idFila:id, cambios:{ fechaVista:fecha } }); descripciones.push(txt);
+      idsAcumuladasDe(id).forEach(function(h){
+        var hc = buscarCausaLocal(h);
+        if(hc && hc.estado==='En Tabla' && !hc.fechaVista){
+          parches.push({ idFila:h, cambios:{ fechaVista:fecha } }); descripciones.push(txt+' · junto a su causa base');
+        }
+      });
+    });
+    return escribirParches(parches, descripciones).then(function(){
+      return { ok:true, registradas: parches.length, omitidas: omitidas, parches: parches };
+    });
+  }
+
+  /** "Volver a Disponible" desde Control de Tabla: borra las fechas de ese ciclo (quedan en el
+   *  historial) y la causa —junto con sus acumuladas que estaban en tabla— reaparece en Stock y
+   *  en el Índice de Prioridad. */
+  function accionDevolverADisponible(idsFila){
+    var parches = [], descripciones = [];
+    idsFila.forEach(function(id){
+      var c = buscarCausaLocal(id);
+      if(!c || c.estado!=='En Tabla') return;
+      var dias = diasEntre(c.fechaEnTabla, hoyDDMMYYYY());
+      var txt = 'Volvió a Disponible desde Control de Tabla'+(c.fechaEnTabla ? ' (estuvo en tabla desde el '+c.fechaEnTabla+(dias!==null?', '+dias+' día(s)':'')+', sin ser vista)' : '');
+      parches.push({ idFila:id, cambios:{ estado:'Disponible', fechaEnTabla:'', fechaVista:'' } }); descripciones.push(txt);
+      idsAcumuladasDe(id).forEach(function(h){
+        var hc = buscarCausaLocal(h);
+        if(hc && hc.estado==='En Tabla'){
+          parches.push({ idFila:h, cambios:{ estado:'Disponible', fechaEnTabla:'', fechaVista:'' } }); descripciones.push(txt+' · junto a su causa base');
+        }
+      });
+    });
+    return escribirParches(parches, descripciones).then(function(){ return { ok:true, devueltas: parches.length, parches: parches }; });
+  }
+
   /** Cualquier cambio sobre una causa (estado, RIJA, complejidad, acumular/desacumular,
-   *  edición manual) queda con sello de hora y además genera un evento en el historial
-   *  (vista "9 — Última actualización"), describiendo específicamente qué se cambió. */
+   *  observación, fechas de tabla) queda con sello de hora y genera un evento en el historial
+   *  (vista "10 — Última actualización"). Reglas de "En Tabla": al entrar se anota sola la fecha
+   *  de puesta en tabla; al salir se borran sus fechas; la causa base arrastra a sus acumuladas.
+   *  Devuelve los parches escritos para que la pantalla los refleje sin recargar. */
   function accionActualizarCausa(idFila, cambios){
     if(!idFila) return Promise.reject(new Error('idFila inválido.'));
-    var antes = estado.causas.find(function(c){ return String(c.idFila)===String(idFila); });
-    var cambiosConSello = Object.assign({}, cambios, { actualizadoEn: firebase.firestore.FieldValue.serverTimestamp() });
-    var promesa = db.collection('causas').doc(String(idFila)).update(cambiosConSello)
-      .then(function(){ return registrarHistorial(antes || {idFila:idFila}, descripcionCambios(antes, cambios)); });
-    if(cambios && cambios.estado === 'En Tabla'){
-      var hijos = idsAcumuladasDe(idFila);
-      if(hijos.length){
-        var ahora = firebase.firestore.FieldValue.serverTimestamp();
-        var nombreBase = antes ? (antes.rol+'-'+antes.anio) : idFila;
-        promesa = promesa.then(function(){
-          return ejecutarEnLotes(hijos, function(batch, lote){
-            lote.forEach(function(id){ batch.update(db.collection('causas').doc(String(id)), {estado:'En Tabla', actualizadoEn: ahora}); });
-          });
-        }).then(function(){
-          return Promise.all(hijos.map(function(id){
-            var hijoAntes = estado.causas.find(function(c){ return String(c.idFila)===String(id); });
-            return registrarHistorial(hijoAntes || {idFila:id}, 'Pasó a Tabla (arrastrada por acumulación a '+nombreBase+')');
-          }));
-        });
+    var antes = buscarCausaLocal(idFila) || {};
+    cambios = Object.assign({}, cambios);
+    var prev = antes.estado || 'Disponible';
+    var hoy = hoyDDMMYYYY();
+
+    if('estado' in cambios){
+      if(cambios.estado==='En Tabla' && prev!=='En Tabla'){
+        if(!('fechaEnTabla' in cambios)) cambios.fechaEnTabla = hoy;
+        if(!('fechaVista' in cambios)) cambios.fechaVista = '';
+      } else if(prev==='En Tabla' && cambios.estado!=='En Tabla'){
+        cambios.fechaEnTabla = ''; cambios.fechaVista = '';
       }
     }
-    return promesa.then(function(){ return { ok:true }; });
+    // validación de las fechas de tabla
+    if('fechaEnTabla' in cambios || 'fechaVista' in cambios){
+      var fEnT = 'fechaEnTabla' in cambios ? cambios.fechaEnTabla : antes.fechaEnTabla;
+      var fVis = 'fechaVista' in cambios ? cambios.fechaVista : antes.fechaVista;
+      if(fEnT && !parsearFechaLocal(fEnT)) return Promise.reject(errorValidacion('La fecha en tabla no es válida.'));
+      if(fVis && !parsearFechaLocal(fVis)) return Promise.reject(errorValidacion('La fecha de vista en Sala no es válida.'));
+      if(fEnT && diasEntre(hoy, fEnT) > 0) return Promise.reject(errorValidacion('La fecha en tabla no puede ser futura.'));
+      if(fVis && diasEntre(hoy, fVis) > 0) return Promise.reject(errorValidacion('La fecha de vista en Sala no puede ser futura.'));
+      if(fEnT && fVis && diasEntre(fEnT, fVis) < 0) return Promise.reject(errorValidacion('La fecha de vista en Sala ('+fVis+') no puede ser anterior a la puesta en tabla ('+fEnT+').'));
+    }
+
+    var parches = [{ idFila: idFila, cambios: cambios }];
+    var descripciones = [descripcionCambios(antes, cambios)];
+    var nombreBase = antes.rol ? (antes.rol+'/'+antes.anio) : idFila;
+    var hijos = idsAcumuladasDe(idFila).map(buscarCausaLocal).filter(Boolean);
+    hijos.forEach(function(h){
+      var ch = null, desc = '';
+      if(cambios.estado==='En Tabla' && h.estado!=='En Tabla'){
+        ch = { estado:'En Tabla', fechaEnTabla: ('fechaEnTabla' in cambios ? cambios.fechaEnTabla : (antes.fechaEnTabla||hoy)), fechaVista: ('fechaVista' in cambios ? cambios.fechaVista : '') };
+        desc = 'Pasó a Tabla (arrastrada por acumulación a '+nombreBase+')';
+      } else if(prev==='En Tabla' && cambios.estado==='Disponible' && h.estado==='En Tabla'){
+        ch = { estado:'Disponible', fechaEnTabla:'', fechaVista:'' };
+        desc = 'Volvió a Disponible (arrastrada junto a su causa base '+nombreBase+')';
+      } else if(h.estado==='En Tabla' && prev==='En Tabla' && cambios.estado===undefined &&
+                ('fechaVista' in cambios || 'fechaEnTabla' in cambios)){
+        ch = {};
+        if('fechaVista' in cambios) ch.fechaVista = cambios.fechaVista;
+        if('fechaEnTabla' in cambios) ch.fechaEnTabla = cambios.fechaEnTabla;
+        desc = descripcionCambios(h, ch)+' · junto a su causa base '+nombreBase;
+      }
+      if(ch){ parches.push({ idFila:h.idFila, cambios:ch }); descripciones.push(desc); }
+    });
+    return escribirParches(parches, descripciones).then(function(){ return { ok:true, parches: parches }; });
   }
 
   function accionEliminarFila(idFila){
@@ -1898,6 +2114,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     recalcularRankingSiGenerado().then(renderRanking);
     renderTraspaso();
     renderInformeMensual();
+    renderControlTabla();
   }
 
   // configuración vía hash: #k=CLAVE
@@ -1920,6 +2137,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var n = Object.keys(estado.seleccionStaging).length;
     document.getElementById('barraStaging').classList.toggle('oculto', vista==='traspaso' || n===0);
     if(vista==='historial') cargarHistorial(true);
+    if(vista==='tabla') renderControlTabla();
   }
   document.querySelectorAll('nav.etapas button').forEach(function(btn){
     btn.addEventListener('click', function(){ irAVista(btn.dataset.vista); });
@@ -2000,6 +2218,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       renderTraspaso();
       renderDashboard();
       renderInformeMensual();
+      renderControlTabla();
       recalcularRankingSiGenerado().then(renderRanking);
     }).catch(mostrarErrorGlobal);
   }
@@ -2015,7 +2234,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
   function mostrarErrorGlobal(err){
     console.error(err);
-    document.getElementById('resumenHeader').textContent = 'Error: '+err.message;
+    if(!err.validacion) document.getElementById('resumenHeader').textContent = 'Error: '+err.message;
     mostrarToast(err.message || 'Ocurrió un error inesperado.', 'error');
   }
 
@@ -2862,6 +3081,333 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     });
   }
 
+  /* ================= CONTROL DE TABLA ================= */
+  var filtroSalaTabla = 'pendientes';
+  var selTabla = {};          // idFila -> true (causas marcadas en la tabla de gestión)
+  var visiblesTabla = [];     // idFila de las filas hoy visibles (para "seleccionar todas")
+  var subpanelTabla = 'gestion';
+  var graficoTablaDia = null, graficoTablaMes = null;
+
+  /** Las acumuladas se ven junto a su causa base: no se listan ni se cuentan aparte. */
+  function causasEnTabla(){ return estado.causas.filter(function(c){ return c.estado==='En Tabla' && !c.acumulada; }); }
+  /** Días corridos desde la puesta en tabla hasta la vista en Sala (o hasta hoy si sigue pendiente). */
+  function diasTabla(c){ return c.fechaEnTabla ? diasEntre(c.fechaEnTabla, c.fechaVista || hoyDDMMYYYY()) : null; }
+  function claseDiasTabla(d, vista){
+    if(vista || d===null) return '';
+    return d>30 ? 'dias-critico' : (d>15 ? 'dias-alto' : (d>7 ? 'dias-medio' : 'dias-ok'));
+  }
+  function textoDias(d){ return d===null ? '—' : d+(d===1?' día':' días'); }
+  function mediana(arr){
+    if(!arr.length) return null;
+    var a = arr.slice().sort(function(x,y){ return x-y; }), m = Math.floor(a.length/2);
+    return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
+  }
+  function promedio(arr){ return arr.length ? arr.reduce(function(t,x){ return t+x; },0)/arr.length : null; }
+  function fmt1(n){ return n===null ? '—' : (Math.round(n*10)/10).toString().replace('.',','); }
+
+  function kpiTabla(num, lbl, color, extra){
+    return '<div class="kpi" style="border-left-color:'+color+';"><div class="num">'+num+'</div><div class="lbl">'+lbl+'</div>'+(extra||'')+'</div>';
+  }
+
+  function renderControlTabla(){
+    if(!document.getElementById('tablaControlTabla')) return;
+    var todas = causasEnTabla();
+    var pendientes = todas.filter(function(c){ return !c.fechaVista; });
+    var vistas = todas.filter(function(c){ return !!c.fechaVista; });
+
+    // --- KPIs superiores ---
+    var diasVistas = vistas.map(diasTabla).filter(function(d){ return d!==null; });
+    var maxPend = pendientes.map(diasTabla).filter(function(d){ return d!==null; });
+    var hoyD = new Date();
+    var vistasMes = vistas.filter(function(c){ var f = parsearFechaLocal(c.fechaVista); return f && f.getFullYear()===hoyD.getFullYear() && f.getMonth()===hoyD.getMonth(); }).length;
+    document.getElementById('kpisTabla').innerHTML =
+      kpiTabla(todas.length, 'En tabla', 'var(--azul-profundo)') +
+      kpiTabla(pendientes.length, 'Pendientes de Sala', 'var(--ambar)') +
+      kpiTabla(vistas.length, 'Vistas en Sala', 'var(--verde)') +
+      kpiTabla(vistasMes, 'Vistas este mes', 'var(--azul-medio)') +
+      kpiTabla(fmt1(promedio(diasVistas)), 'Prom. días de espera', 'var(--acento)') +
+      kpiTabla(maxPend.length ? Math.max.apply(null, maxPend) : '—', 'Pendiente más antigua (días)', 'var(--rojo)');
+
+    // --- filtros ---
+    poblarFiltroLibro(document.getElementById('filtroLibroTabla'), todas);
+    var texto = (document.getElementById('buscadorTabla').value||'').toLowerCase();
+    var libro = document.getElementById('filtroLibroTabla').value;
+    var base = todas.filter(function(c){
+      if(libro && !mismoLibro(c.libro, libro)) return false;
+      if(!texto) return true;
+      return [c.rol,c.anio,c.libro,c.materia].join(' ').toLowerCase().indexOf(texto) > -1;
+    });
+    var basePend = base.filter(function(c){ return !c.fechaVista; }), baseVis = base.filter(function(c){ return !!c.fechaVista; });
+    var cuentas = { pendientes: basePend.length, vistas: baseVis.length, todas: base.length };
+    document.querySelectorAll('#chipsSalaTabla .chip-anio').forEach(function(b){
+      b.classList.toggle('activo', b.dataset.sala===filtroSalaTabla);
+      b.querySelector('.chip-count').textContent = cuentas[b.dataset.sala];
+    });
+    var lista = filtroSalaTabla==='pendientes' ? basePend : (filtroSalaTabla==='vistas' ? baseVis : base);
+    var ordenFecha = function(f){ var d = parsearFechaLocal(f); return d ? d.getTime() : null; };
+    lista = lista.slice().sort(function(a,b){
+      var va = !!a.fechaVista, vb = !!b.fechaVista;
+      if(va!==vb) return va ? 1 : -1;                       // pendientes primero
+      if(va){ return (ordenFecha(b.fechaVista)||0)-(ordenFecha(a.fechaVista)||0); }   // vistas: la más reciente arriba
+      var fa = ordenFecha(a.fechaEnTabla), fb = ordenFecha(b.fechaEnTabla);              // pendientes: la más antigua arriba
+      if(fa===null && fb===null) return 0; if(fa===null) return 1; if(fb===null) return -1;
+      return fa-fb;
+    });
+
+    // --- tabla ---
+    visiblesTabla = lista.map(function(c){ return String(c.idFila); });
+    Object.keys(selTabla).forEach(function(id){ if(!todas.some(function(c){ return String(c.idFila)===id; })) delete selTabla[id]; });
+    var hoyIso = fechaAFormatoInput(hoyDDMMYYYY());
+    var etiquetaFiltro = filtroSalaTabla==='pendientes' ? 'pendiente(s) de Sala' : (filtroSalaTabla==='vistas' ? 'vista(s) en Sala' : 'en tabla');
+    document.getElementById('contadorTabla').textContent = lista.length+' causa(s) '+etiquetaFiltro;
+    document.querySelector('#tablaControlTabla tbody').innerHTML = lista.map(function(c){
+      var d = diasTabla(c), esVista = !!c.fechaVista, nAcum = contarAcumuladasDe(c.idFila);
+      var minVista = c.fechaEnTabla ? ' min="'+fechaAFormatoInput(c.fechaEnTabla)+'"' : '';
+      return '<tr data-id="'+c.idFila+'">'+
+        '<td><input type="checkbox" class="chkTabla" data-id="'+c.idFila+'" '+(selTabla[c.idFila]?'checked':'')+'></td>'+
+        '<td>'+(c.rol||'')+'</td><td>'+(c.anio||'')+'</td>'+
+        '<td>'+(c.libro||'')+(nAcum ? ' <span class="badge-tiene-acumuladas" style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;">+'+nAcum+' acum.</span>' : '')+'</td>'+
+        celdaMateria(c)+
+        '<td><input type="date" class="inp-fecha-tabla" data-id="'+c.idFila+'" data-campo="fechaEnTabla" value="'+fechaAFormatoInput(c.fechaEnTabla)+'" max="'+hoyIso+'"></td>'+
+        '<td><span class="dias-tabla '+claseDiasTabla(d, esVista)+'">'+textoDias(d)+(esVista||d===null ? '' : ' en espera')+'</span></td>'+
+        '<td><input type="date" class="inp-fecha-tabla" data-id="'+c.idFila+'" data-campo="fechaVista" value="'+fechaAFormatoInput(c.fechaVista)+'"'+minVista+' max="'+hoyIso+'"></td>'+
+        '<td>'+(esVista
+          ? '<button type="button" class="btn-enlace btnQuitarVista" data-id="'+c.idFila+'">Quitar vista</button>'
+          : '<button type="button" class="btn-enlace btnDevolverFila" data-id="'+c.idFila+'">Volver a Disponible</button>')+'</td></tr>';
+    }).join('') || filaVacia(9, 'No hay causas para mostrar', filtroSalaTabla==='pendientes' ? 'No hay causas pendientes de Sala. Confirma un Traspaso para que aparezcan aquí.' : 'Prueba con otro filtro.', ICONO_VACIO_LISTA);
+    actualizarContadorSelTabla();
+
+    if(subpanelTabla==='indicadores' && !document.getElementById('vista-tabla').classList.contains('oculto')){
+      renderIndicadoresTabla(todas, pendientes, vistas);
+    }
+  }
+
+  function actualizarContadorSelTabla(){
+    var n = Object.keys(selTabla).length;
+    document.getElementById('contadorSelTabla').textContent = n+' seleccionada(s)';
+    var todasMarcadas = visiblesTabla.length>0 && visiblesTabla.every(function(id){ return selTabla[id]; });
+    document.getElementById('chkTodasTabla').checked = todasMarcadas;
+  }
+
+  /* ---- indicadores ---- */
+  function mismoDia(a, b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+  function trimestreDe(d){ return d.getFullYear()*4 + Math.floor(d.getMonth()/3); }
+
+  function renderIndicadoresTabla(todas, pendientes, vistas){
+    var hoyD = new Date(); hoyD.setHours(0,0,0,0);
+    var fv = vistas.map(function(c){ return { c:c, f:parsearFechaLocal(c.fechaVista), d:diasTabla(c) }; }).filter(function(x){ return x.f; });
+    var cuenta = function(pred){ return fv.filter(function(x){ return pred(x.f); }).length; };
+    var haceDias = function(n){ var d = new Date(hoyD); d.setDate(d.getDate()-n); return d; };
+
+    // --- período actual vs anterior ---
+    var hoyN = cuenta(function(f){ return mismoDia(f, hoyD); });
+    var ayerN = cuenta(function(f){ return mismoDia(f, haceDias(1)); });
+    var sem = cuenta(function(f){ return f>=haceDias(6) && f<=hoyD; });
+    var semAnt = cuenta(function(f){ return f>=haceDias(13) && f<=haceDias(7); });
+    var mesN = cuenta(function(f){ return f.getFullYear()===hoyD.getFullYear() && f.getMonth()===hoyD.getMonth(); });
+    var mesAntD = new Date(hoyD.getFullYear(), hoyD.getMonth()-1, 1);
+    var mesAnt = cuenta(function(f){ return f.getFullYear()===mesAntD.getFullYear() && f.getMonth()===mesAntD.getMonth(); });
+    var tq = trimestreDe(hoyD);
+    var triN = cuenta(function(f){ return trimestreDe(f)===tq; });
+    var triAnt = cuenta(function(f){ return trimestreDe(f)===tq-1; });
+    var anioN = cuenta(function(f){ return f.getFullYear()===hoyD.getFullYear(); });
+    var anioAnt = cuenta(function(f){ return f.getFullYear()===hoyD.getFullYear()-1; });
+    var ant = function(t, n){ return '<span class="tendencia tendencia-neutra">'+t+': '+n+'</span>'; };
+    var nomMes = hoyD.toLocaleDateString('es-CL',{month:'long'});
+    document.getElementById('periodosTabla').innerHTML =
+      kpiTabla(hoyN, 'Vistas hoy', 'var(--verde)', ant('Ayer', ayerN)) +
+      kpiTabla(sem, 'Últimos 7 días', 'var(--azul-medio)', ant('7 días previos', semAnt)) +
+      kpiTabla(mesN, 'Este mes ('+nomMes+')', 'var(--azul-profundo)', ant('Mes anterior', mesAnt)) +
+      kpiTabla(triN, 'Este trimestre (T'+(Math.floor(hoyD.getMonth()/3)+1)+')', 'var(--acento)', ant('Trimestre anterior', triAnt)) +
+      kpiTabla(anioN, 'Este año ('+hoyD.getFullYear()+')', 'var(--purpura)', ant('Año anterior', anioAnt));
+
+    // --- gráfico por día (30 días) ---
+    var labD = [], datD = [];
+    for(var i=29;i>=0;i--){
+      var dd = haceDias(i);
+      labD.push(('0'+dd.getDate()).slice(-2)+'/'+('0'+(dd.getMonth()+1)).slice(-2));
+      datD.push(cuenta(function(f){ return mismoDia(f, dd); }));
+    }
+    // --- gráfico por mes (12 meses) ---
+    var labM = [], datM = [];
+    for(var m=11;m>=0;m--){
+      var mm = new Date(hoyD.getFullYear(), hoyD.getMonth()-m, 1);
+      labM.push(mm.toLocaleDateString('es-CL',{month:'short',year:'2-digit'}));
+      datM.push(cuenta(function(f){ return f.getFullYear()===mm.getFullYear() && f.getMonth()===mm.getMonth(); }));
+    }
+    var dibujar = function(idCanvas, previo, labels, data, color){
+      var ctx = document.getElementById(idCanvas);
+      if(!ctx || typeof Chart==='undefined') return null;
+      if(previo) previo.destroy();
+      return new Chart(ctx, { type:'bar',
+        data:{ labels:labels, datasets:[{ data:data, backgroundColor:color, borderRadius:4, maxBarThickness:28 }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} },
+          scales:{ y:{ beginAtZero:true, ticks:{precision:0} }, x:{ ticks:{ maxRotation:60, autoSkip:true } } } } });
+    };
+    graficoTablaDia = dibujar('chartTablaDia', graficoTablaDia, labD, datD, '#1D8A9E');
+    graficoTablaMes = dibujar('chartTablaMes', graficoTablaMes, labM, datM, '#1D4E7E');
+
+    // --- trimestres y años calendario ---
+    var anios = [hoyD.getFullYear(), hoyD.getFullYear()-1];
+    document.getElementById('tbodyTrimAnual').innerHTML = anios.map(function(y){
+      var q = [0,1,2,3].map(function(k){ return cuenta(function(f){ return f.getFullYear()===y && Math.floor(f.getMonth()/3)===k; }); });
+      return '<tr><td><b>'+y+'</b></td>'+q.map(function(n){ return '<td>'+n+'</td>'; }).join('')+'<td><b>'+q.reduce(function(t,x){ return t+x; },0)+'</b></td></tr>';
+    }).join('');
+
+    // --- antigüedad de pendientes ---
+    var tramos = [['0 a 7 días',0,7],['8 a 15 días',8,15],['16 a 30 días',16,30],['Más de 30 días',31,1e9]];
+    var cuerpoAnt = tramos.map(function(t){
+      var n = pendientes.filter(function(c){ var d = diasTabla(c); return d!==null && d>=t[1] && d<=t[2]; }).length;
+      return '<tr><td>'+t[0]+'</td><td><b>'+n+'</b></td></tr>';
+    }).join('');
+    var sinFecha = pendientes.filter(function(c){ return diasTabla(c)===null; }).length;
+    if(sinFecha) cuerpoAnt += '<tr><td>Sin fecha en tabla</td><td><b>'+sinFecha+'</b></td></tr>';
+    document.getElementById('tbodyAntiguedadTabla').innerHTML = cuerpoAnt;
+
+    // --- días de espera (vistas) ---
+    var ds = fv.map(function(x){ return x.d; }).filter(function(d){ return d!==null; });
+    document.getElementById('statsEsperaTabla').innerHTML =
+      kpiTabla(ds.length, 'Vistas con fechas completas', 'var(--azul-profundo)') +
+      kpiTabla(fmt1(promedio(ds)), 'Promedio (días)', 'var(--verde)') +
+      kpiTabla(fmt1(mediana(ds)), 'Mediana (días)', 'var(--azul-medio)') +
+      kpiTabla(ds.length ? Math.min.apply(null, ds) : '—', 'Mínimo (días)', 'var(--cian)') +
+      kpiTabla(ds.length ? Math.max.apply(null, ds) : '—', 'Máximo (días)', 'var(--rojo)');
+
+    var porMes = {};
+    fv.forEach(function(x){
+      if(x.d===null) return;
+      var k = x.f.getFullYear()+'-'+('0'+(x.f.getMonth()+1)).slice(-2);
+      (porMes[k] = porMes[k] || []).push(x.d);
+    });
+    var cuerpoMes = Object.keys(porMes).sort().reverse().slice(0,12).map(function(k){
+      var a = porMes[k], p = k.split('-');
+      return '<tr><td>'+new Date(+p[0], +p[1]-1, 1).toLocaleDateString('es-CL',{month:'short',year:'numeric'})+'</td><td>'+a.length+'</td><td>'+fmt1(promedio(a))+'</td><td>'+Math.max.apply(null,a)+'</td></tr>';
+    }).join('');
+    document.getElementById('tbodyEsperaMes').innerHTML = cuerpoMes || '<tr><td colspan="4" class="vacio">Aún no hay causas vistas en Sala.</td></tr>';
+
+    var porLibro = {}, etiquetaLibro = {};
+    todas.forEach(function(c){
+      var k = claveLibro(c.libro)||'SINLIBRO'; etiquetaLibro[k] = etiquetaLibro[k] || (c.libro||'Sin libro');
+      var o = porLibro[k] = porLibro[k] || { pend:0, vis:0, dias:[] };
+      if(c.fechaVista){ o.vis++; var d = diasTabla(c); if(d!==null) o.dias.push(d); } else o.pend++;
+    });
+    document.getElementById('tbodyEsperaLibro').innerHTML = Object.keys(porLibro).sort(function(a,b){ return (porLibro[b].pend+porLibro[b].vis)-(porLibro[a].pend+porLibro[a].vis); }).map(function(k){
+      var o = porLibro[k];
+      return '<tr><td>'+etiquetaLibro[k]+'</td><td>'+o.pend+'</td><td>'+o.vis+'</td><td>'+fmt1(promedio(o.dias))+'</td><td>'+(o.dias.length?Math.max.apply(null,o.dias):'—')+'</td></tr>';
+    }).join('') || '<tr><td colspan="5" class="vacio">Sin causas en tabla.</td></tr>';
+  }
+
+  /* ---- eventos ---- */
+  function cambiarSubpanelTabla(nombre){
+    subpanelTabla = nombre;
+    document.getElementById('panelTablaGestion').classList.toggle('oculto', nombre!=='gestion');
+    document.getElementById('panelTablaIndicadores').classList.toggle('oculto', nombre!=='indicadores');
+    document.getElementById('btnSubGestion').classList.toggle('activo', nombre==='gestion');
+    document.getElementById('btnSubIndicadores').classList.toggle('activo', nombre==='indicadores');
+    renderControlTabla();
+  }
+  document.getElementById('btnSubGestion').addEventListener('click', function(){ cambiarSubpanelTabla('gestion'); });
+  document.getElementById('btnSubIndicadores').addEventListener('click', function(){ cambiarSubpanelTabla('indicadores'); });
+
+  document.getElementById('buscadorTabla').addEventListener('input', function(){ actualizarBotonLimpiarBuscador(this); renderControlTabla(); });
+  document.getElementById('btnLimpiarBuscadorTabla').addEventListener('click', function(){
+    var inp = document.getElementById('buscadorTabla'); inp.value=''; actualizarBotonLimpiarBuscador(inp); inp.focus(); renderControlTabla();
+  });
+  document.getElementById('filtroLibroTabla').addEventListener('change', renderControlTabla);
+  document.querySelectorAll('#chipsSalaTabla .chip-anio').forEach(function(b){
+    b.addEventListener('click', function(){ filtroSalaTabla = b.dataset.sala; renderControlTabla(); });
+  });
+  document.getElementById('chkTodasTabla').addEventListener('change', function(){
+    var marcar = this.checked;
+    visiblesTabla.forEach(function(id){ if(marcar) selTabla[id] = true; else delete selTabla[id]; });
+    document.querySelectorAll('#tablaControlTabla .chkTabla').forEach(function(ch){ ch.checked = marcar; });
+    actualizarContadorSelTabla();
+  });
+  (function(){
+    var hoyIso = fechaAFormatoInput(hoyDDMMYYYY());
+    var f = document.getElementById('fechaVistaMasiva'); f.value = hoyIso; f.max = hoyIso;
+  })();
+
+  /** Guarda una fecha de la fila (en tabla / vista en Sala). Una causa base arrastra a sus acumuladas. */
+  function guardarFechaTabla(idFila, campo, valorDD){
+    var cambios = {}; cambios[campo] = valorDD;
+    llamarServicio({accion:'actualizarCausa', idFila: idFila, cambios: cambios}).then(function(datos){
+      aplicarParches(datos.parches);
+      refrescarVistasDerivadas();
+      mostrarToast(campo==='fechaVista' ? (valorDD ? 'Fecha de vista en Sala guardada.' : 'Se quitó la fecha de vista en Sala.') : 'Fecha en tabla corregida.', 'exito');
+    }).catch(function(err){ mostrarErrorGlobal(err); renderControlTabla(); });
+  }
+
+  function devolverADisponible(ids){
+    llamarServicio({accion:'devolverADisponible', idsFila: ids}).then(function(datos){
+      aplicarParches(datos.parches);
+      ids.forEach(function(id){ delete selTabla[id]; });
+      refrescarVistasDerivadas();
+      mostrarToast(datos.devueltas+' causa(s) volvieron a Disponible (Stock e Índice de Prioridad actualizados).', 'exito');
+    }).catch(mostrarErrorGlobal);
+  }
+
+  (function(){
+    var tbody = document.querySelector('#tablaControlTabla tbody');
+    tbody.addEventListener('change', function(e){
+      var t = e.target;
+      if(t.classList.contains('chkTabla')){
+        if(t.checked) selTabla[t.dataset.id] = true; else delete selTabla[t.dataset.id];
+        actualizarContadorSelTabla();
+        return;
+      }
+      if(t.classList.contains('inp-fecha-tabla')){
+        var valor = t.value ? formatoInputAFecha(t.value) : '';
+        if(t.dataset.campo==='fechaEnTabla' && !valor){
+          mostrarToast('La fecha en tabla no se puede dejar vacía. Para sacar la causa de tabla usa "Volver a Disponible".', 'error');
+          renderControlTabla(); return;
+        }
+        guardarFechaTabla(t.dataset.id, t.dataset.campo, valor);
+      }
+    });
+    tbody.addEventListener('click', function(e){
+      var t = e.target;
+      if(t.classList.contains('btnQuitarVista')){
+        var c = buscarCausaLocal(t.dataset.id);
+        confirmarAccion('¿Quitar la fecha de vista en Sala de la causa ROL '+(c?c.rol:'')+'/'+(c?c.anio:'')+'? Quedará nuevamente pendiente de Sala.', {textoOk:'Sí, quitar'}).then(function(ok){
+          if(ok) guardarFechaTabla(t.dataset.id, 'fechaVista', '');
+        });
+      } else if(t.classList.contains('btnDevolverFila')){
+        var c2 = buscarCausaLocal(t.dataset.id);
+        confirmarAccion('¿Devolver la causa ROL '+(c2?c2.rol:'')+'/'+(c2?c2.anio:'')+' a Disponible? Se borra su fecha en tabla (queda en el Historial), vuelve a Stock y al Índice de Prioridad, junto con sus acumuladas.', {textoOk:'Sí, devolver'}).then(function(ok){
+          if(ok) devolverADisponible([t.dataset.id]);
+        });
+      }
+    });
+  })();
+
+  document.getElementById('btnRegistrarVistas').addEventListener('click', function(){
+    var ids = Object.keys(selTabla).filter(function(id){ var c = buscarCausaLocal(id); return c && c.estado==='En Tabla' && !c.fechaVista; });
+    var fechaInput = document.getElementById('fechaVistaMasiva').value;
+    if(!fechaInput){ mostrarToast('Indica la fecha en que se vieron en Sala.', 'error'); return; }
+    if(!ids.length){ mostrarToast('Marca al menos una causa pendiente de Sala.', 'error'); return; }
+    var fecha = formatoInputAFecha(fechaInput), btn = this; btn.disabled = true;
+    llamarServicio({accion:'registrarVistaSala', idsFila: ids, fecha: fecha}).then(function(datos){
+      aplicarParches(datos.parches);
+      var propias = datos.parches.filter(function(p){ var c = buscarCausaLocal(p.idFila); return c && !c.acumulada; }).length;
+      var registradas = {};
+      datos.parches.forEach(function(p){ registradas[p.idFila] = true; });
+      ids.forEach(function(id){ if(registradas[id]) delete selTabla[id]; });   // las omitidas siguen marcadas para corregir la fecha
+      refrescarVistasDerivadas();
+      mostrarToast('Vista en Sala registrada el '+fecha+' para '+propias+' causa(s)'+(datos.omitidas ? ' · '+datos.omitidas+' omitida(s) (la fecha es anterior a su puesta en tabla)' : '')+'.', propias ? 'exito' : 'error');
+    }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled = false; });
+  });
+
+  document.getElementById('btnDevolverDisponible').addEventListener('click', function(){
+    var sel = Object.keys(selTabla).map(buscarCausaLocal).filter(function(c){ return c && c.estado==='En Tabla'; });
+    var ids = sel.filter(function(c){ return !c.fechaVista; }).map(function(c){ return String(c.idFila); });
+    var vistasSel = sel.length-ids.length;
+    if(!ids.length){ mostrarToast(vistasSel ? 'Las causas ya vistas en Sala no se devuelven a Disponible. Usa "Quitar vista" si necesitas corregirlas.' : 'Marca al menos una causa pendiente de Sala.', 'error'); return; }
+    confirmarAccion('¿Devolver '+ids.length+' causa(s) pendientes de Sala a Disponible? Se borra su fecha en tabla (queda en el Historial) y vuelven a Stock y al Índice de Prioridad, junto con sus acumuladas.'+(vistasSel ? ' ('+vistasSel+' ya vista(s) en Sala no se incluyen.)' : ''), {textoOk:'Sí, devolver'}).then(function(ok){
+      if(ok) devolverADisponible(ids);
+    });
+  });
+
   /* ================= STOCK ================= */
 
   /** Recalcula las opciones de un <select> de LIBRO a partir de los valores reales
@@ -2891,6 +3437,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   var filtroAcumuladaStock = false;
   var filtroPescaStock = false;
   var filtroHechoStock = false;
+  var filtroSalaStock = false;
 
   /** `omitir` deja de aplicar UN filtro puntual ('estado'|'rija'|'acumulada') — lo usan
    *  los contadores de los chips para mostrar cuántas causas quedarían con ESE chip
@@ -2908,6 +3455,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(omitir!=='acumulada' && filtroAcumuladaStock && !c.acumulada) return false;
       if(omitir!=='pesca' && filtroPescaStock && !esPesca(c)) return false;
       if(omitir!=='hecho' && filtroHechoStock && !c.recursoHecho) return false;
+      if(omitir!=='sala' && filtroSalaStock && !(c.estado==='En Tabla' && !c.fechaVista)) return false;
       if(filtroLibro && !mismoLibro(c.libro, filtroLibro)) return false;
       if(relacionDesde || relacionHasta){
         var mesAnio = mesAnioDeFecha(c.fechaRelacion);
@@ -3021,8 +3569,9 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var conAcum = causasFiltradas('acumulada').filter(function(c){ return c.acumulada; }).length;
     var conPesca = causasFiltradas('pesca').filter(esPesca).length;
     var conHecho = causasFiltradas('hecho').filter(function(c){ return c.recursoHecho; }).length;
-    var conteos = { rija:conRija, acumulada:conAcum, pesca:conPesca, hecho:conHecho };
-    var activos = { rija:filtroRijaStock, acumulada:filtroAcumuladaStock, pesca:filtroPescaStock, hecho:filtroHechoStock };
+    var conSala = causasFiltradas('sala').filter(function(c){ return c.estado==='En Tabla' && !c.fechaVista; }).length;
+    var conteos = { rija:conRija, acumulada:conAcum, pesca:conPesca, hecho:conHecho, sala:conSala };
+    var activos = { rija:filtroRijaStock, acumulada:filtroAcumuladaStock, pesca:filtroPescaStock, hecho:filtroHechoStock, sala:filtroSalaStock };
     cont.querySelectorAll('.chip-marca').forEach(function(btn){
       var marca = btn.dataset.marca;
       btn.classList.toggle('activo', activos[marca]);
@@ -3041,6 +3590,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         else if(marca==='acumulada') filtroAcumuladaStock = !filtroAcumuladaStock;
         else if(marca==='pesca') filtroPescaStock = !filtroPescaStock;
         else if(marca==='hecho') filtroHechoStock = !filtroHechoStock;
+        else if(marca==='sala') filtroSalaStock = !filtroSalaStock;
         renderStock();
       });
     });
@@ -3084,7 +3634,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     // en una causa acumulada, el estado real se mantiene (y se puede editar) pero se
     // muestra apagado: la señal principal de esa fila es el badge "Acumulada" de al lado.
     var clase = c.acumulada ? 'chip-apagado' : (CLASE_CHIP_ESTADO[valor] || 'chip-tramite');
-    var html = '<select class="sel-inline sel-estado '+clase+'" data-id="'+c.idFila+'">';
+    var tip = valor==='En Tabla' ? (' title="'+escaparAtributo('En tabla desde '+(c.fechaEnTabla||'—')+(c.fechaVista ? ' · vista en Sala el '+c.fechaVista : ' · pendiente de Sala'))+'"') : '';
+    var html = '<select class="sel-inline sel-estado '+clase+'" data-id="'+c.idFila+'"'+tip+'>';
     OPCIONES_ESTADO.forEach(function(o){
       html += '<option value="'+o+'" '+(o===valor?'selected':'')+'>'+(ETIQUETA_ESTADO_CORTA[o]||o)+'</option>';
     });
@@ -3252,6 +3803,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     filtroAcumuladaStock=false;
     filtroPescaStock=false;
     filtroHechoStock=false;
+    filtroSalaStock=false;
     soloDuplicados=false;
     document.getElementById('btnDuplicados').innerHTML = ICONOS.duplicado+' Ver duplicados';
     renderStock();
@@ -3327,8 +3879,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   /* ================= EDICIÓN RÁPIDA DE ESTADO (inline) ================= */
   function guardarEstadoInline(sel, idFila, nuevoValor, valorAnterior){
     sel.disabled = true;
-    llamarServicio({accion:'actualizarCausa', idFila: idFila, cambios:{estado: nuevoValor}}).then(function(){
-      aplicarCambiosLocales(idFila, {estado: nuevoValor}); // incluye el arrastre de acumuladas si pasa a "En Tabla"
+    llamarServicio({accion:'actualizarCausa', idFila: idFila, cambios:{estado: nuevoValor}}).then(function(datos){
+      aplicarParches(datos.parches); // incluye fechas de tabla y el arrastre de acumuladas
       sel.dataset.valorAnterior = nuevoValor;
       sel.className = 'sel-inline sel-estado ' + (CLASE_CHIP_ESTADO[nuevoValor] || 'chip-tramite');
       refrescarVistasDerivadas();
@@ -3376,9 +3928,9 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var btn = this; btn.disabled = true; btn.textContent = 'Guardando...';
     llamarServicio({accion:'actualizarCausa', idFila: idFila, cambios:{
       estado:'Suspendida Procedimiento', fechaSuspension: fechaMostrada, diasSuspension: dias
-    }}).then(function(){
+    }}).then(function(datos){
+      aplicarParches(datos.parches);
       var causa = estado.causas.find(function(c){return String(c.idFila)===String(idFila);});
-      if(causa){ causa.estado='Suspendida Procedimiento'; causa.fechaSuspension=fechaMostrada; causa.diasSuspension=dias; causa.actualizadoEn=new Date(); }
       sel.dataset.valorAnterior = 'Suspendida Procedimiento';
       sel.className = 'sel-inline sel-estado chip-suspendida';
       sel.disabled = false;
@@ -3520,8 +4072,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     if(causa && nuevo === String(causa.comentarios||'').trim()){ mostrarToast('No hay cambios en la observaci\u00f3n.', 'info'); return; }
     var btn = this; btn.disabled = true; btn.textContent = 'Guardando...';
     var cambios = { comentarios: nuevo };
-    llamarServicio({accion:'actualizarCausa', idFila: idFila, cambios: cambios}).then(function(){
-      aplicarCambiosLocales(idFila, cambios);
+    llamarServicio({accion:'actualizarCausa', idFila: idFila, cambios: cambios}).then(function(datos){
+      aplicarParches(datos.parches);
       refrescarVistasDerivadas();
       cerrarModalEditar();
       mostrarToast('Observaci\u00f3n guardada.', 'exito');
@@ -3639,8 +4191,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         ).then(function(ok){
           if(!ok) return;
           var cambiosDesacumular = { acumulada:false, causaBaseId:'', causaBaseRol:'', causaBaseAnio:'' };
-          llamarServicio({accion:'actualizarCausa', idFila: btn.dataset.id, cambios: cambiosDesacumular}).then(function(){
-            aplicarCambiosLocales(btn.dataset.id, cambiosDesacumular);
+          llamarServicio({accion:'actualizarCausa', idFila: btn.dataset.id, cambios: cambiosDesacumular}).then(function(datos){
+            aplicarParches(datos.parches);
             refrescarVistasDerivadas();
             renderListaAcumuladaModal();
             mostrarToast('Causa desacumulada.', 'exito');
@@ -3665,8 +4217,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(!ok) return;
       btn.disabled = true; btn.textContent = 'Guardando...';
       var cambiosAcumular = { acumulada:true, causaBaseId: baseAcumulada.idFila, causaBaseRol: baseAcumulada.rol, causaBaseAnio: baseAcumulada.anio };
-      llamarServicio({accion:'actualizarCausa', idFila: causa.idFila, cambios: cambiosAcumular}).then(function(){
-        aplicarCambiosLocales(causa.idFila, cambiosAcumular);
+      llamarServicio({accion:'actualizarCausa', idFila: causa.idFila, cambios: cambiosAcumular}).then(function(datos){
+        aplicarParches(datos.parches);
         refrescarVistasDerivadas();
         renderListaAcumuladaModal();
         document.getElementById('acumRol').value = '';
@@ -3758,10 +4310,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         var msj = 'Actualizadas '+datos.actualizadas+' causa(s) a estado "En Tabla".';
         if(datos.arrastradas) msj += ' (+'+datos.arrastradas+' acumulada(s) arrastrada(s) junto a su causa base).';
         mostrarToast(msj, 'exito');
-        conArrastreDeAcumuladas(ids).forEach(function(id){
-          var c = estado.causas.find(function(x){ return String(x.idFila)===String(id); });
-          if(c){ c.estado = 'En Tabla'; c.actualizadoEn = new Date(); }
-        });
+        aplicarParches(datos.parches);
         estado.seleccionStaging = {};
         renderBarraStaging();
         refrescarVistasDerivadas();
