@@ -192,6 +192,23 @@ input.buscador{min-width:220px;flex:1;width:100%;}
 .contador-resultados{color:var(--texto-suave);font-size:12px;margin:0 0 var(--e2);}
 
 
+
+/* -------- icono de observacion -------- */
+.celda-rol{white-space:nowrap;}
+button.ico-obs{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-left:6px;padding:0;
+  vertical-align:middle;border:none;border-radius:6px;background:#FDE9F0;color:var(--acento);cursor:pointer;}
+button.ico-obs svg{width:14px;height:14px;}
+button.ico-obs:hover{background:var(--acento);color:#fff;}
+.pop-obs{position:fixed;z-index:500;display:none;max-width:340px;min-width:190px;background:var(--superficie);color:var(--texto);
+  border:1px solid var(--borde);border-left:4px solid var(--acento);border-radius:10px;box-shadow:0 10px 30px rgba(15,42,74,.22);
+  padding:10px 12px;pointer-events:none;}
+.pop-obs-cab{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--azul-profundo);margin-bottom:6px;}
+.pop-obs-bloque + .pop-obs-bloque{margin-top:8px;padding-top:8px;border-top:1px dashed var(--borde);}
+.pop-obs-lbl{font-size:10.5px;font-weight:700;color:var(--texto-suave);text-transform:uppercase;margin-bottom:2px;}
+.pop-obs-txt{font-size:12.5px;line-height:1.45;white-space:pre-wrap;word-break:break-word;}
+.pop-obs-pie{margin-top:8px;font-size:10.5px;color:var(--texto-suave);}
+@media print{ button.ico-obs, .pop-obs{display:none!important;} }
+
 /* -------- Control de Tabla -------- */
 .subtabs-tabla{display:flex;gap:8px;margin:var(--e3) 0;flex-wrap:wrap;}
 .barra-vista-sala{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--azul-claro);border:1px solid #cddcec;
@@ -358,6 +375,7 @@ tr.fila-seleccionada td{background:#fff3f7!important;}
 .chip-marca[data-marca="pesca"]{--clr:var(--azul-medio);}
 .chip-marca[data-marca="hecho"]{--clr:var(--ambar);}
 .chip-marca[data-marca="sala"]{--clr:#1D8A9E;}
+.chip-marca[data-marca="obs"]{--clr:var(--acento);}
 .badge-hecho{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;
   background:#FFF1DB;color:#9A5B00;border:1px solid #F0C98A;white-space:nowrap;}
 .chip-count{font-weight:700;font-variant-numeric:tabular-nums;}
@@ -818,6 +836,7 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
               <button type="button" class="chip-marca" data-marca="pesca" title="Materia: Pesca y Acuicultura">🐟 Pesca <span class="chip-count"></span></button>
               <button type="button" class="chip-marca" data-marca="hecho" title="Causas con recurso de hecho (según inventario)">⚖ Hecho <span class="chip-count"></span></button>
               <button type="button" class="chip-marca" data-marca="sala" title="En tabla, pendientes de ser vistas en Sala">🏛 Pend. Sala <span class="chip-count"></span></button>
+              <button type="button" class="chip-marca" data-marca="obs" title="Causas con una observación escrita">💬 Con observación <span class="chip-count"></span></button>
             </div>
           </div>
         </div>
@@ -827,7 +846,7 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
         <div class="contenedor-tabla">
           <table class="datos tabla-stock-ajustada" id="tablaStock">
             <colgroup>
-              <col style="width:34px"><col style="width:52px"><col style="width:52px"><col style="width:170px">
+              <col style="width:34px"><col style="width:68px"><col style="width:52px"><col style="width:170px">
               <col style="width:239px"><col style="width:50px"><col style="width:145px">
               <col style="width:140px"><col style="width:48px"><col style="width:92px"><col style="width:74px"><col style="width:150px"><col style="width:115px">
               <col style="width:100px"><col style="width:100px"><col style="width:80px">
@@ -3066,7 +3085,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       var esSuspendidaVencida = c.estado === 'Suspendida Procedimiento';
       return '<tr class="'+claseFilaRanking(c)+' '+(marcada?'fila-seleccionada':'')+'">'+
         '<td><input type="checkbox" data-id="'+c.idFila+'" class="chkRanking" '+(marcada?'checked':'')+'></td>'+
-        '<td>'+(i+1)+'</td><td>'+(c.rol||'')+(esSuspendidaVencida?' <span style="color:var(--purpura);font-size:10px;font-weight:700;">(Suspendida)</span>':'')+'</td>'+
+        '<td>'+(i+1)+'</td><td>'+(c.rol||'')+iconoObservacion(c.idFila)+(esSuspendidaVencida?' <span style="color:var(--purpura);font-size:10px;font-weight:700;">(Suspendida)</span>':'')+'</td>'+
         '<td>'+(c.anio||'')+'</td><td>'+(c.libro||'')+'</td>'+celdaMateria(c)+
         '<td class="puntaje">'+c.puntaje+'</td><td class="motivos">'+(c.motivos||[]).join(' · ')+'</td>'+
         '<td>'+(c.fechaRelacion||'')+'</td></tr>';
@@ -3165,7 +3184,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       var minVista = c.fechaEnTabla ? ' min="'+fechaAFormatoInput(c.fechaEnTabla)+'"' : '';
       return '<tr data-id="'+c.idFila+'">'+
         '<td><input type="checkbox" class="chkTabla" data-id="'+c.idFila+'" '+(selTabla[c.idFila]?'checked':'')+'></td>'+
-        '<td>'+(c.rol||'')+'</td><td>'+(c.anio||'')+'</td>'+
+        '<td>'+(c.rol||'')+iconoObservacion(c.idFila)+'</td><td>'+(c.anio||'')+'</td>'+
         '<td>'+(c.libro||'')+(nAcum ? ' <span class="badge-tiene-acumuladas" style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;">+'+nAcum+' acum.</span>' : '')+'</td>'+
         celdaMateria(c)+
         '<td><input type="date" class="inp-fecha-tabla" data-id="'+c.idFila+'" data-campo="fechaEnTabla" value="'+fechaAFormatoInput(c.fechaEnTabla)+'" max="'+hoyIso+'"></td>'+
@@ -3438,6 +3457,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   var filtroPescaStock = false;
   var filtroHechoStock = false;
   var filtroSalaStock = false;
+  var filtroObsStock = false;
 
   /** `omitir` deja de aplicar UN filtro puntual ('estado'|'rija'|'acumulada') — lo usan
    *  los contadores de los chips para mostrar cuántas causas quedarían con ESE chip
@@ -3456,6 +3476,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(omitir!=='pesca' && filtroPescaStock && !esPesca(c)) return false;
       if(omitir!=='hecho' && filtroHechoStock && !c.recursoHecho) return false;
       if(omitir!=='sala' && filtroSalaStock && !(c.estado==='En Tabla' && !c.fechaVista)) return false;
+      if(omitir!=='obs' && filtroObsStock && !tieneObservacion(c)) return false;
       if(filtroLibro && !mismoLibro(c.libro, filtroLibro)) return false;
       if(relacionDesde || relacionHasta){
         var mesAnio = mesAnioDeFecha(c.fechaRelacion);
@@ -3570,8 +3591,9 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var conPesca = causasFiltradas('pesca').filter(esPesca).length;
     var conHecho = causasFiltradas('hecho').filter(function(c){ return c.recursoHecho; }).length;
     var conSala = causasFiltradas('sala').filter(function(c){ return c.estado==='En Tabla' && !c.fechaVista; }).length;
-    var conteos = { rija:conRija, acumulada:conAcum, pesca:conPesca, hecho:conHecho, sala:conSala };
-    var activos = { rija:filtroRijaStock, acumulada:filtroAcumuladaStock, pesca:filtroPescaStock, hecho:filtroHechoStock, sala:filtroSalaStock };
+    var conObs = causasFiltradas('obs').filter(tieneObservacion).length;
+    var conteos = { rija:conRija, acumulada:conAcum, pesca:conPesca, hecho:conHecho, sala:conSala, obs:conObs };
+    var activos = { rija:filtroRijaStock, acumulada:filtroAcumuladaStock, pesca:filtroPescaStock, hecho:filtroHechoStock, sala:filtroSalaStock, obs:filtroObsStock };
     cont.querySelectorAll('.chip-marca').forEach(function(btn){
       var marca = btn.dataset.marca;
       btn.classList.toggle('activo', activos[marca]);
@@ -3591,6 +3613,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         else if(marca==='pesca') filtroPescaStock = !filtroPescaStock;
         else if(marca==='hecho') filtroHechoStock = !filtroHechoStock;
         else if(marca==='sala') filtroSalaStock = !filtroSalaStock;
+        else if(marca==='obs') filtroObsStock = !filtroObsStock;
         renderStock();
       });
     });
@@ -3675,7 +3698,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       var claseFilaAcum = c.acumulada ? 'fila-es-acumulada ' : (nAcum ? 'fila-tiene-acumuladas ' : '');
       return '<tr class="fila-clicable '+claseFilaAcum+(esDup?'fila-duplicada ':(pesca?'fila-pesca ':''))+(marcada?'fila-seleccionada':'')+'" data-id="'+c.idFila+'">'+
         '<td><input type="checkbox" data-id="'+c.idFila+'" class="chkStock" '+(marcada?'checked':'')+(c.acumulada?' disabled title="Las causas acumuladas no se traspasan por sí solas"':'')+'></td>'+
-        '<td>'+(c.rol||'')+'</td><td>'+(c.anio||'')+'</td><td class="celda-libro" title="'+escaparAtributo(c.libro||'')+'">'+(c.libro||'')+'</td>'+celdaMateria(c)+
+        '<td class="celda-rol">'+(c.rol||'')+iconoObservacion(c.idFila)+'</td><td>'+(c.anio||'')+'</td><td class="celda-libro" title="'+escaparAtributo(c.libro||'')+'">'+(c.libro||'')+'</td>'+celdaMateria(c)+
         '<td>'+(c.tipo||'')+'</td><td>'+construirSelectComplejidad(c)+'</td><td>'+construirSelectEstado(c)+'</td>'+
         '<td><input type="checkbox" class="chk-rija chkRija" data-id="'+c.idFila+'" '+(tieneRija?'checked':'')+'></td>'+
         '<td>'+celdaAcum+'</td>'+
@@ -3804,6 +3827,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     filtroPescaStock=false;
     filtroHechoStock=false;
     filtroSalaStock=false;
+    filtroObsStock=false;
     soloDuplicados=false;
     document.getElementById('btnDuplicados').innerHTML = ICONOS.duplicado+' Ver duplicados';
     renderStock();
@@ -3967,9 +3991,65 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     return si ? '<span class="pill-si '+(color||'')+'">'+textoSi+'</span>' : '<span class="pill-no">No</span>';
   }
 
+  /* ================= ICONO DE OBSERVACION ================= */
+  /** Una causa "tiene observacion" si trae texto propio (comentarios, lo escrito en la plataforma)
+   *  o la observacion original de la planilla. Es solo visual: no cambia ningun dato. */
+  function tieneObservacion(c){
+    return !!(c && (String(c.comentarios||'').trim() || String(c.observacion||'').trim()));
+  }
+  var SVG_OBS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg>';
+  function iconoObservacion(idFila){
+    if(!tieneObservacion(buscarCausaLocal(idFila))) return '';
+    return '<button type="button" class="ico-obs" data-id="'+escaparAtributo(idFila)+'" aria-label="Esta causa tiene una observación">'+SVG_OBS+'</button>';
+  }
+
+  var popObs = null;
+  function ocultarPopObs(){ if(popObs) popObs.style.display = 'none'; }
+  function mostrarPopObs(btn){
+    var c = buscarCausaLocal(btn.dataset.id);
+    if(!tieneObservacion(c)) return;
+    if(!popObs){
+      popObs = document.createElement('div');
+      popObs.className = 'pop-obs';
+      popObs.setAttribute('role', 'tooltip');
+      document.body.appendChild(popObs);
+    }
+    var propia = String(c.comentarios||'').trim(), planilla = String(c.observacion||'').trim();
+    var recortar = function(t){ return t.length>500 ? t.slice(0,500)+'… (clic para ver completa)' : t; };
+    popObs.innerHTML = '';
+    var cab = document.createElement('div'); cab.className = 'pop-obs-cab';
+    cab.textContent = 'ROL '+(c.rol||'')+'/'+(c.anio||'')+' · '+(c.libro||'');
+    popObs.appendChild(cab);
+    [[propia, 'Observación'], [planilla, 'Observación de la planilla']].forEach(function(par){
+      if(!par[0]) return;
+      var b = document.createElement('div'); b.className = 'pop-obs-bloque';
+      if(propia && planilla){ var l = document.createElement('div'); l.className = 'pop-obs-lbl'; l.textContent = par[1]; b.appendChild(l); }
+      var t = document.createElement('div'); t.className = 'pop-obs-txt'; t.textContent = recortar(par[0]); b.appendChild(t);
+      popObs.appendChild(b);
+    });
+    var pie = document.createElement('div'); pie.className = 'pop-obs-pie'; pie.textContent = 'Clic para abrir la ficha';
+    popObs.appendChild(pie);
+    popObs.style.display = 'block';
+    var r = btn.getBoundingClientRect(), w = popObs.offsetWidth, h = popObs.offsetHeight;
+    var x = Math.min(Math.max(8, r.left), window.innerWidth - w - 8);
+    var y = r.bottom + 8; if(y + h > window.innerHeight - 8) y = Math.max(8, r.top - h - 8);
+    popObs.style.left = x+'px'; popObs.style.top = y+'px';
+  }
+  document.addEventListener('mouseover', function(e){ var b = e.target.closest && e.target.closest('.ico-obs'); if(b) mostrarPopObs(b); });
+  document.addEventListener('mouseout', function(e){ var b = e.target.closest && e.target.closest('.ico-obs'); if(b) ocultarPopObs(); });
+  window.addEventListener('scroll', ocultarPopObs, true);
+  // en fase de captura para que el clic del icono no dispare ademas el de la fila
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('.ico-obs');
+    if(!b) return;
+    e.stopPropagation(); e.preventDefault();
+    ocultarPopObs();
+    abrirModalEditar(b.dataset.id, true);
+  }, true);
+
   /** Resumen de la causa (solo lectura): todo su estado actual en un solo lugar. Lo unico
    *  editable es la observacion; el resto se cambia directo en la fila de la causa. */
-  function abrirModalEditar(idFila){
+  function abrirModalEditar(idFila, irAObservaciones){
     var causa = estado.causas.find(function(c){ return String(c.idFila)===String(idFila); });
     if(!causa) return;
     modalEditar.dataset.idFila = idFila;
@@ -4035,6 +4115,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     cargarHistorialDeCausa(idFila);
     modalEditar.classList.remove('oculto');
     requestAnimationFrame(function(){ modalEditar.classList.add('abierto'); });
+    if(irAObservaciones) setTimeout(function(){ document.getElementById('editComentarios').scrollIntoView({block:'center'}); }, 300);
   }
 
   /** Ultimos cambios registrados para esta causa (coleccion "historial"). Se filtra por
