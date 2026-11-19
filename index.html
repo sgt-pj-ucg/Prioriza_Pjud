@@ -374,8 +374,14 @@ tr.fila-seleccionada td{background:#fff3f7!important;}
 .chip-marca[data-marca="acumulada"]{--clr:var(--cian);}
 .chip-marca[data-marca="pesca"]{--clr:var(--azul-medio);}
 .chip-marca[data-marca="hecho"]{--clr:var(--ambar);}
+.chip-marca[data-marca="casacion"]{--clr:#7C4DA8;}
+.chip-marca[data-marca="apelacion"]{--clr:#1D4E7E;}
 .chip-marca[data-marca="sala"]{--clr:#1D8A9E;}
 .chip-marca[data-marca="obs"]{--clr:var(--acento);}
+.badge-rec{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;}
+.badge-rec-hecho{background:#FFF1DB;color:#9A5B00;border:1px solid #F0C98A;}
+.badge-rec-casacion{background:#EFE6F8;color:#5B3A8C;border:1px solid #D2BFEA;}
+.badge-rec-apelacion{background:#E3EEF9;color:#1D4E7E;border:1px solid #B7D0EA;}
 .badge-hecho{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;
   background:#FFF1DB;color:#9A5B00;border:1px solid #F0C98A;white-space:nowrap;}
 .chip-count{font-weight:700;font-variant-numeric:tabular-nums;}
@@ -551,6 +557,8 @@ textarea.paste{width:100%;min-height:140px;padding:var(--e3);border:1px solid va
 .pill-si{background:#FFF1DB;color:#9A5B00;border:1px solid #F0C98A;}
 .pill-si.rojo{background:#FBE6E3;color:#A32A1E;border-color:#F1B9B2;}
 .pill-si.verde{background:#E3F4EA;color:#17704A;border-color:#B5DFC8;}
+.pill-si.morado{background:#EFE6F8;color:#5B3A8C;border-color:#D2BFEA;}
+.pill-si.azul{background:#E3EEF9;color:#1D4E7E;border-color:#B7D0EA;}
 .pill-si.celeste{background:#E0F5F8;color:#0F6E80;border-color:#A9DCE5;}
 .pill-no{background:#F0F2F5;color:var(--texto-suave);border:1px solid var(--borde);font-weight:600;}
 .lista-acum-resumen{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;}
@@ -799,7 +807,7 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
           <input type="month" class="filtro" id="filtroRelacionHasta">
           <button class="btn btn-secundario" id="btnDuplicados"></button>
           <button class="btn btn-secundario" id="btnActualizarMaterias"><svg class="icono-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l1.93-1.93a5 5 0 0 0-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 0 0-7.07 0L5 12.93a5 5 0 0 0 7.07 7.07l1.43-1.43"/></svg> Actualizar materias desde Stock</button>
-          <button class="btn btn-secundario" id="btnCargarRecursosHecho" title="Sube el inventario (hoja 'inventario causas') y marca las causas con recurso de hecho"><svg class="icono-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7h14M7 7l-3 7a3 3 0 0 0 6 0L7 7zM17 7l-3 7a3 3 0 0 0 6 0l-3-7z"/></svg> Marcar recursos de hecho</button>
+          <button class="btn btn-secundario" id="btnCargarRecursosHecho" title="Sube el inventario (hoja 'inventario causas') y marca el tipo de recurso de cada causa: Hecho, Casación o Apelación"><svg class="icono-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7h14M7 7l-3 7a3 3 0 0 0 6 0L7 7zM17 7l-3 7a3 3 0 0 0 6 0l-3-7z"/></svg> Cargar tipos de recurso</button>
           <input type="file" id="archivoRecursosHecho" accept=".xlsx,.xls,.xlsm" class="oculto">
           <button class="btn btn-secundario" id="btnLimpiarFiltrosStock">Limpiar</button>
         </div>
@@ -835,6 +843,8 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
               <button type="button" class="chip-marca" data-marca="acumulada">⛓ Acumuladas <span class="chip-count"></span></button>
               <button type="button" class="chip-marca" data-marca="pesca" title="Materia: Pesca y Acuicultura">🐟 Pesca <span class="chip-count"></span></button>
               <button type="button" class="chip-marca" data-marca="hecho" title="Causas con recurso de hecho (según inventario)">⚖ Hecho <span class="chip-count"></span></button>
+              <button type="button" class="chip-marca" data-marca="casacion" title="Causas con recurso de casación (incluye casación y apelación)">Casación <span class="chip-count"></span></button>
+              <button type="button" class="chip-marca" data-marca="apelacion" title="Causas con recurso de apelación">Apelación <span class="chip-count"></span></button>
               <button type="button" class="chip-marca" data-marca="sala" title="En tabla, pendientes de ser vistas en Sala">🏛 Pend. Sala <span class="chip-count"></span></button>
               <button type="button" class="chip-marca" data-marca="obs" title="Causas con una observación escrita">💬 Con observación <span class="chip-count"></span></button>
             </div>
@@ -852,7 +862,7 @@ tr.fila-inconsistente td{background:#fdf3e3!important;}
               <col style="width:100px"><col style="width:100px"><col style="width:80px">
             </colgroup>
             <thead><tr><th></th><th>ROL</th><th>AÑO</th><th>LIBRO</th><th>MATERIA</th><th>TIPO</th><th>COMPLEJIDAD</th>
-              <th>ESTADO</th><th>RIJA</th><th>ACUM.</th><th>REC. HECHO</th><th>SUSPENSIÓN</th><th>DÍAS PARA REANUDAR</th>
+              <th>ESTADO</th><th>RIJA</th><th>ACUM.</th><th>RECURSO</th><th>SUSPENSIÓN</th><th>DÍAS PARA REANUDAR</th>
               <th>FECHA INGRESO</th><th>FECHA RELACIÓN</th><th class="col-acciones"></th></tr></thead>
             <tbody></tbody>
           </table>
@@ -1475,7 +1485,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   var PUNTAJES_LIBRO_DEFECTO = [300, 200, 100, 50, 25];
   var CAMPOS_CAUSA = ['rol','anio','libro','fechaIngreso','observacion','fechaRelacion','materia',
     'complejidad','tipo','estado','rija','fechaSuspension','diasSuspension','comentarios',
-    'acumulada','causaBaseId','causaBaseRol','causaBaseAnio','recursoHecho','fechaEnTabla','fechaVista'];
+    'acumulada','causaBaseId','causaBaseRol','causaBaseAnio','recursoHecho','tipoRecurso','fechaEnTabla','fechaVista'];
 
   /** El LIBRO llega con distinta escritura según la planilla ("Civil", "CIVIL", "Laboral - Cobranza",
    *  "LABORAL - COBRANZA"): todo cruce por libro (prioridad del Índice, filtros, agrupaciones) debe
@@ -1538,7 +1548,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         case 'reemplazarBaseDatos': return accionReemplazarBaseDatos(cuerpo.filas||[], cuerpo.confirmar);
         case 'cargarStock': return accionCargarStock(cuerpo.filas||[]);
         case 'actualizarMaterias': return accionActualizarMaterias();
-        case 'marcarRecursosHecho': return accionMarcarRecursosHecho(cuerpo.claves||[]);
+        case 'marcarTiposRecurso': return accionMarcarTiposRecurso(cuerpo.mapa||{});
         case 'registrarVistaSala': return accionRegistrarVistaSala(cuerpo.idsFila||[], cuerpo.fecha);
         case 'devolverADisponible': return accionDevolverADisponible(cuerpo.idsFila||[]);
         case 'generarRanking': return accionGenerarRanking();
@@ -1841,36 +1851,67 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     return partes.join('; ');
   }
 
-  /** Marca/desmarca "recurso de hecho" según el inventario: `claves` son las ROL|AÑO|LIBRO
-   *  (claveCruce) que en TIPO RECURSO dicen "hecho". Las del stock que están en la lista
-   *  quedan marcadas y las demás desmarcadas; solo se escriben las que cambian, y cada
-   *  cambio queda en el historial. No toca ningún otro dato de la causa. */
-  function accionMarcarRecursosHecho(claves){
-    var set = {};
-    claves.forEach(function(k){ set[k] = true; });
-    var aMarcar = [], aDesmarcar = [];
+  /* ---------------- tipo de recurso (Hecho / Casación / Apelación) ---------------- */
+  var TIPOS_RECURSO = {
+    hecho:     { etq:'Hecho',      corta:'Hecho', titulo:'Recurso de hecho' },
+    casacion:  { etq:'Casación',   corta:'Cas.',  titulo:'Casación (incluye "casación y apelación")' },
+    apelacion: { etq:'Apelación',  corta:'Apel.', titulo:'Apelación' }
+  };
+  /** Clasifica el TIPO RECURSO del inventario. Orden de prioridad: Hecho > Casación > Apelación,
+   *  así "casación y apelación" queda en Casación (el recurso más específico). Lo demás (nulidad,
+   *  protección, comunicaciones…) no se clasifica. */
+  function clasificarRecurso(texto){
+    var t = String(texto||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    if(t.indexOf('hecho')>-1) return 'hecho';
+    if(t.indexOf('casacion')>-1) return 'casacion';
+    if(t.indexOf('apelacion')>-1) return 'apelacion';
+    return '';
+  }
+  /** Las causas marcadas antes con "recursoHecho" siguen contando como Hecho aunque no tengan tipoRecurso. */
+  function tipoRecursoDe(c){ return (c && (c.tipoRecurso || (c.recursoHecho ? 'hecho' : ''))) || ''; }
+  function badgeRecurso(c){
+    var t = tipoRecursoDe(c);
+    return t ? '<span class="badge-rec badge-rec-'+t+'" title="'+escaparAtributo(TIPOS_RECURSO[t].titulo+' (según inventario)')+'">'+TIPOS_RECURSO[t].corta+'</span>' : '';
+  }
+
+  /** Aplica el tipo de recurso del inventario: `mapa` es {ROL|AÑO|LIBRO: 'hecho'|'casacion'|'apelacion'}.
+   *  Las causas del stock que están en el mapa quedan marcadas y las demás sin marca; solo se escriben
+   *  las que cambian y no se toca ningún otro dato (ni la "última modificación"). Los cambios de
+   *  "Hecho" quedan en el historial de cada causa; el resto, en un único registro de resumen. */
+  function accionMarcarTiposRecurso(mapa){
+    var cambios = [];
     estado.causas.forEach(function(c){
-      var debe = !!set[claveCruce(c.rol, c.anio, c.libro)];
-      var tiene = !!c.recursoHecho;
-      if(debe && !tiene) aMarcar.push(c);
-      else if(!debe && tiene) aDesmarcar.push(c);
+      var debe = mapa[claveCruce(c.rol, c.anio, c.libro)] || '';
+      if((c.tipoRecurso||'')===debe && !!c.recursoHecho===(debe==='hecho')) return;
+      cambios.push({ c:c, debe:debe, antes:tipoRecursoDe(c) });
     });
-    var ahora = firebase.firestore.FieldValue.serverTimestamp();
-    var cambios = aMarcar.map(function(c){ return {c:c, marcar:true}; })
-      .concat(aDesmarcar.map(function(c){ return {c:c, marcar:false}; }));
     return ejecutarEnLotes(cambios, function(batch, lote){
       lote.forEach(function(x){
         batch.update(db.collection('causas').doc(String(x.c.idFila)), {
-          recursoHecho: x.marcar ? true : firebase.firestore.FieldValue.delete(),
-          actualizadoEn: ahora
+          tipoRecurso: x.debe ? x.debe : firebase.firestore.FieldValue.delete(),
+          recursoHecho: x.debe==='hecho' ? true : firebase.firestore.FieldValue.delete()
         });
       });
     }).then(function(){
-      return Promise.all(cambios.map(function(x){
-        return registrarHistorial(x.c, x.marcar ? 'Recurso de hecho: marcado (desde inventario)' : 'Recurso de hecho: desmarcado (desde inventario)');
+      var cambiosHecho = cambios.filter(function(x){ return (x.debe==='hecho') !== (x.antes==='hecho'); });
+      return Promise.all(cambiosHecho.map(function(x){
+        return registrarHistorial(x.c, x.debe==='hecho' ? 'Recurso de hecho: marcado (desde inventario)' : 'Recurso de hecho: desmarcado (desde inventario)');
       }));
     }).then(function(){
-      return { ok:true, marcadas:aMarcar.length, desmarcadas:aDesmarcar.length };
+      var tot = { hecho:0, casacion:0, apelacion:0 };
+      estado.causas.forEach(function(c){ var t = mapa[claveCruce(c.rol, c.anio, c.libro)] || ''; if(t) tot[t]++; });
+      var cambiaron = cambios.filter(function(x){ return x.antes!==x.debe; }).length;
+      if(!cambiaron) return null;
+      return db.collection('historial').add({
+        causaId:'', rol:'', anio:'', libro:'',
+        descripcion:'Carga de tipos de recurso desde inventario: Apelación '+tot.apelacion+', Casación '+tot.casacion+', Hecho '+tot.hecho+' ('+cambiaron+' causa(s) con cambios)',
+        fecha: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(function(e){ console.error('No se pudo registrar el resumen:', e); });
+    }).then(function(){
+      var parches = cambios.map(function(x){
+        return { idFila:x.c.idFila, cambios:{ tipoRecurso:x.debe, recursoHecho: x.debe==='hecho' ? true : '' } };
+      });
+      return { ok:true, cambiadas:cambios.length, parches:parches };
     });
   }
 
@@ -1891,13 +1932,13 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   /** Refleja en la copia en memoria lo que acaba de guardarse en Firestore (la acción devuelve
    *  los "parches" exactos que escribió, incluidas las acumuladas arrastradas), en vez de volver
    *  a descargar las ~2.900 causas tras cada acción. */
-  function aplicarParches(parches){
+  function aplicarParches(parches, sinSello){
     var ahora = new Date();
     (parches||[]).forEach(function(p){
       var c = buscarCausaLocal(p.idFila);
       if(!c) return;
       Object.keys(p.cambios).forEach(function(k){ c[k] = p.cambios[k]; });
-      c.actualizadoEn = ahora;
+      if(!sinSello) c.actualizadoEn = ahora;
     });
   }
 
@@ -2169,7 +2210,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
 
   function renderItemHistorial(d){
     return '<div class="item-historial">'+
-      '<div class="rol-anio-historial">ROL '+(d.rol||'?')+'/'+(d.anio||'?')+(d.libro?'<span class="libro-historial">'+d.libro+'</span>':'')+'</div>'+
+      '<div class="rol-anio-historial">'+(d.rol ? 'ROL '+d.rol+'/'+(d.anio||'?')+(d.libro?'<span class="libro-historial">'+d.libro+'</span>':'') : 'Sistema')+'</div>'+
       '<div class="desc-historial">'+(d.descripcion||'')+'</div>'+
       '<div class="fecha-historial">'+(formatoFechaHora(d.fecha)||'—')+'</div>'+
       '</div>';
@@ -3456,6 +3497,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
   var filtroAcumuladaStock = false;
   var filtroPescaStock = false;
   var filtroHechoStock = false;
+  var filtroCasacionStock = false;
+  var filtroApelacionStock = false;
   var filtroSalaStock = false;
   var filtroObsStock = false;
 
@@ -3474,7 +3517,9 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       if(omitir!=='rija' && filtroRijaStock && String(c.rija||'').toUpperCase().indexOf('RIJA')<0) return false;
       if(omitir!=='acumulada' && filtroAcumuladaStock && !c.acumulada) return false;
       if(omitir!=='pesca' && filtroPescaStock && !esPesca(c)) return false;
-      if(omitir!=='hecho' && filtroHechoStock && !c.recursoHecho) return false;
+      if(omitir!=='hecho' && filtroHechoStock && tipoRecursoDe(c)!=='hecho') return false;
+      if(omitir!=='casacion' && filtroCasacionStock && tipoRecursoDe(c)!=='casacion') return false;
+      if(omitir!=='apelacion' && filtroApelacionStock && tipoRecursoDe(c)!=='apelacion') return false;
       if(omitir!=='sala' && filtroSalaStock && !(c.estado==='En Tabla' && !c.fechaVista)) return false;
       if(omitir!=='obs' && filtroObsStock && !tieneObservacion(c)) return false;
       if(filtroLibro && !mismoLibro(c.libro, filtroLibro)) return false;
@@ -3589,11 +3634,13 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     var conRija = causasFiltradas('rija').filter(function(c){ return String(c.rija||'').toUpperCase().indexOf('RIJA')>-1; }).length;
     var conAcum = causasFiltradas('acumulada').filter(function(c){ return c.acumulada; }).length;
     var conPesca = causasFiltradas('pesca').filter(esPesca).length;
-    var conHecho = causasFiltradas('hecho').filter(function(c){ return c.recursoHecho; }).length;
+    var conHecho = causasFiltradas('hecho').filter(function(c){ return tipoRecursoDe(c)==='hecho'; }).length;
+    var conCasacion = causasFiltradas('casacion').filter(function(c){ return tipoRecursoDe(c)==='casacion'; }).length;
+    var conApelacion = causasFiltradas('apelacion').filter(function(c){ return tipoRecursoDe(c)==='apelacion'; }).length;
     var conSala = causasFiltradas('sala').filter(function(c){ return c.estado==='En Tabla' && !c.fechaVista; }).length;
     var conObs = causasFiltradas('obs').filter(tieneObservacion).length;
-    var conteos = { rija:conRija, acumulada:conAcum, pesca:conPesca, hecho:conHecho, sala:conSala, obs:conObs };
-    var activos = { rija:filtroRijaStock, acumulada:filtroAcumuladaStock, pesca:filtroPescaStock, hecho:filtroHechoStock, sala:filtroSalaStock, obs:filtroObsStock };
+    var conteos = { rija:conRija, acumulada:conAcum, pesca:conPesca, hecho:conHecho, casacion:conCasacion, apelacion:conApelacion, sala:conSala, obs:conObs };
+    var activos = { rija:filtroRijaStock, acumulada:filtroAcumuladaStock, pesca:filtroPescaStock, hecho:filtroHechoStock, casacion:filtroCasacionStock, apelacion:filtroApelacionStock, sala:filtroSalaStock, obs:filtroObsStock };
     cont.querySelectorAll('.chip-marca').forEach(function(btn){
       var marca = btn.dataset.marca;
       btn.classList.toggle('activo', activos[marca]);
@@ -3612,6 +3659,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         else if(marca==='acumulada') filtroAcumuladaStock = !filtroAcumuladaStock;
         else if(marca==='pesca') filtroPescaStock = !filtroPescaStock;
         else if(marca==='hecho') filtroHechoStock = !filtroHechoStock;
+        else if(marca==='casacion') filtroCasacionStock = !filtroCasacionStock;
+        else if(marca==='apelacion') filtroApelacionStock = !filtroApelacionStock;
         else if(marca==='sala') filtroSalaStock = !filtroSalaStock;
         else if(marca==='obs') filtroObsStock = !filtroObsStock;
         renderStock();
@@ -3702,7 +3751,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
         '<td>'+(c.tipo||'')+'</td><td>'+construirSelectComplejidad(c)+'</td><td>'+construirSelectEstado(c)+'</td>'+
         '<td><input type="checkbox" class="chk-rija chkRija" data-id="'+c.idFila+'" '+(tieneRija?'checked':'')+'></td>'+
         '<td>'+celdaAcum+'</td>'+
-        '<td>'+(c.recursoHecho?'<span class="badge-hecho" title="Causa con recurso de hecho (según inventario)">Hecho</span>':'')+'</td>'+
+        '<td>'+badgeRecurso(c)+'</td>'+
         '<td class="celda-suspension" data-id="'+c.idFila+'">'+textoSuspension(c)+'</td>'+
         '<td class="celda-reanudar" data-id="'+c.idFila+'">'+textoDiasReanudar(c)+'</td>'+
         '<td>'+(c.fechaIngreso||'')+'</td><td>'+(c.fechaRelacion||'')+'</td>'+
@@ -3826,6 +3875,8 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
     filtroAcumuladaStock=false;
     filtroPescaStock=false;
     filtroHechoStock=false;
+    filtroCasacionStock=false;
+    filtroApelacionStock=false;
     filtroSalaStock=false;
     filtroObsStock=false;
     soloDuplicados=false;
@@ -3868,33 +3919,38 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       var iAnio = buscarColumnaExcel(headers,'ANIO'); if(iAnio<0) iAnio = buscarColumnaExcel(headers,'ANO');
       var iLibro = buscarColumnaExcel(headers,'TIPOLIBRO'); if(iLibro<0) iLibro = buscarColumnaExcel(headers,'LIBRO');
       var iRec = buscarColumnaExcel(headers,'TIPORECURSO');
-      var vistas = {}, claves = [];
+      var prioridad = { hecho:3, casacion:2, apelacion:1 };
+      var mapa = {}, enInventario = { hecho:0, casacion:0, apelacion:0 };
       for(var i=hoja.filaEncabezados+1; i<hoja.filas.length; i++){
         var f = hoja.filas[i];
-        if(String(f[iRec]||'').toLowerCase().indexOf('hecho')<0) continue;
+        var tipo = clasificarRecurso(f[iRec]);
+        if(!tipo) continue;
         var k = claveCruce(String(f[iRol]||'').trim(), String(f[iAnio]||'').trim(), f[iLibro]);
-        if(!vistas[k]){ vistas[k] = true; claves.push(k); }
+        if(!mapa[k] || prioridad[tipo] > prioridad[mapa[k]]) mapa[k] = tipo;
       }
-      var enStock = 0, nuevas = 0, quitar = 0;
+      Object.keys(mapa).forEach(function(k){ enInventario[mapa[k]]++; });
+      var enStock = { hecho:0, casacion:0, apelacion:0 }, nuevas = 0, cambiaTipo = 0, quitar = 0;
       estado.causas.forEach(function(c){
-        var debe = !!vistas[claveCruce(c.rol, c.anio, c.libro)];
-        if(debe) enStock++;
-        if(debe && !c.recursoHecho) nuevas++;
-        if(!debe && c.recursoHecho) quitar++;
+        var debe = mapa[claveCruce(c.rol, c.anio, c.libro)] || '', tiene = tipoRecursoDe(c);
+        if(debe) enStock[debe]++;
+        if(debe && !tiene) nuevas++;
+        else if(debe && tiene && debe!==tiene) cambiaTipo++;
+        else if(!debe && tiene) quitar++;
       });
       confirmarAccion(
-        'Hoja "'+hoja.nombreHoja+'": '+claves.length+' recurso(s) de hecho en el inventario. '+enStock+' corresponden a causas del Stock actual'+
-        ' ('+nuevas+' se marcarán ahora'+(quitar?', '+quitar+' ya marcadas que no figuran se desmarcarán':'')+'). '+
-        (claves.length-enStock)+' no están en el Stock y no se cargan. No se modifica ningún otro dato.',
-        {titulo:'Marcar recursos de hecho', textoOk:'Sí, marcar'}
+        'Hoja "'+hoja.nombreHoja+'": el inventario trae '+enInventario.apelacion+' Apelación, '+enInventario.casacion+' Casación (incluye "casación y apelación") y '+enInventario.hecho+' Hecho. '+
+        'En el Stock actual quedarán marcadas '+enStock.apelacion+' Apelación, '+enStock.casacion+' Casación y '+enStock.hecho+' Hecho. '+
+        'Cambios: '+nuevas+' causa(s) nuevas con marca'+(cambiaTipo?', '+cambiaTipo+' con cambio de tipo':'')+(quitar?', '+quitar+' que ya no figuran quedarán sin marca':'')+'. '+
+        'No se modifica ningún otro dato.',
+        {titulo:'Cargar tipos de recurso', textoOk:'Sí, cargar'}
       ).then(function(ok){
         if(!ok) return;
         var btn = document.getElementById('btnCargarRecursosHecho'); btn.disabled = true;
-        return llamarServicio({accion:'marcarRecursosHecho', claves: claves}).then(function(datos){
-          mostrarToast('Recurso de hecho: '+datos.marcadas+' marcada(s)'+(datos.desmarcadas?', '+datos.desmarcadas+' desmarcada(s)':'')+'.', 'exito');
-          return llamarServicio({accion:'listar'});
-        }).then(function(datos){ estado.causas = datos.causas; refrescarVistasDerivadas(); })
-        .catch(mostrarErrorGlobal).finally(function(){ btn.disabled = false; });
+        return llamarServicio({accion:'marcarTiposRecurso', mapa: mapa}).then(function(datos){
+          aplicarParches(datos.parches, true);   // carga de catálogo: no cuenta como modificación de la causa
+          refrescarVistasDerivadas();
+          mostrarToast('Tipos de recurso cargados: '+datos.cambiadas+' causa(s) actualizadas.', 'exito');
+        }).catch(mostrarErrorGlobal).finally(function(){ btn.disabled = false; });
       });
     };
     lector.readAsArrayBuffer(archivo);
@@ -4105,7 +4161,7 @@ break;case"<bookViews":;case"<bookViews>":;case"</bookViews>":break;case"<workbo
       datoResumen('Complejidad', causa.complejidad ? esc(causa.complejidad) : '<span class="pill-no">(Sin definir)</span>') +
       datoResumen('RIJA', pillSiNo(tieneRija, 'S\u00ed', 'rojo')) +
       datoResumen('Pesca y Acuicultura', pillSiNo(esPesca(causa), 'S\u00ed', 'verde')) +
-      datoResumen('Recurso de hecho', pillSiNo(!!causa.recursoHecho, 'S\u00ed')) +
+      datoResumen('Tipo de recurso', tipoRecursoDe(causa) ? '<span class="pill-si '+({hecho:'',casacion:'morado',apelacion:'azul'}[tipoRecursoDe(causa)])+'">'+TIPOS_RECURSO[tipoRecursoDe(causa)].etq+'</span>' : '<span class="pill-no">Sin clasificar</span>') +
       datoResumen('\u00daltima modificaci\u00f3n', causa.actualizadoEn ? esc(formatoFechaHora(causa.actualizadoEn)) : '<span class="val suave">Sin cambios desde la carga</span>') +
       datoResumen('Acumulaci\u00f3n', acumHtml, true) +
       datoResumen('Suspensi\u00f3n', suspHtml, true) +
